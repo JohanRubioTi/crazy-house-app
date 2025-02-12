@@ -101,124 +101,127 @@ const Inventory = ({ onUpdateItems, items: propItems }) => { // Receive onUpdate
   }, [items, searchTerm, sortConfig]);
 
   return (
-    <div className="inventory p-4">
-      <h1 className="text-2xl font-bold text-primary mb-4">Inventario</h1>
+    <div className="inventory p-4 bg-street-gradient">
+      <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti">Inventario</h1>
 
       <input
         type="text"
         placeholder="Buscar..."
         value={searchTerm}
         onChange={handleSearchChange}
-        className="shadow appearance-none border rounded w-full py-2 px-3 mb-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+        className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 mb-4 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
       />
 
       <div className="mb-4">
-        <button onClick={() => requestSort('name')} className="mr-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => requestSort('name')} className="mr-2 bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
           Ordenar por Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
         </button>
-        <button onClick={() => requestSort('updatedAt')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => requestSort('updatedAt')} className="bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
           Ordenar por Reciente {sortConfig.key === 'updatedAt' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
         </button>
       </div>
 
-      <button onClick={addItem} className="bg-primary text-white px-4 py-2 rounded mb-4">Agregar Ítem</button>
+      <button onClick={addItem} className="bg-secondary hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full mb-4 font-sans">Agregar Ítem</button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedAndFilteredItems.map(item => (
-          <div key={item.id} className="bg-dark-bg p-4 rounded-lg shadow-md">
-            <h2 className="text-xl text-light-text">{item.name}</h2>
-            <p className="text-gray-400">Cantidad:
-              <button onClick={() => handleQuantityChange(item.id, -1)} className="bg-red-500 text-white px-2 py-1 rounded mx-1">-</button>
-              {item.quantity}
-              <button onClick={() => handleQuantityChange(item.id, 1)} className="bg-green-500 text-white px-2 py-1 rounded mx-1">+</button>
-              ({item.unitType})
-            </p>
-            <p className="text-gray-400">Precio Compra: ${item.priceBought.toLocaleString('es-CO')}</p>
-            <p className="text-gray-400">Precio Venta: ${item.priceSold.toLocaleString('es-CO')}</p>
-            <p className="text-gray-400">Reorden: {item.restockQuantity}</p>
+          <div key={item.id} className="bg-transparent-black bg-opacity-70 backdrop-blur-sm p-4 rounded-lg shadow-md-dark border border-gray-700">
+            <h2 className="text-xl text-light-text font-sans mb-2">{item.name}</h2>
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-gray-400 font-sans">Cantidad:</p>
+              <div className="flex items-center">
+                <button onClick={() => handleQuantityChange(item.id, -1)} className="bg-primary hover:bg-light-accent text-light-text px-2 py-1 rounded-full mx-1 font-sans">-</button>
+                <span className="text-light-text font-bold mx-1">{item.quantity}</span>
+                <button onClick={() => handleQuantityChange(item.id, 1)} className="bg-secondary hover:bg-light-accent text-dark-bg px-2 py-1 rounded-full mx-1 font-sans">+</button>
+                <span className="text-gray-400 font-sans ml-1">({item.unitType})</span>
+              </div>
+            </div>
+            <p className="text-gray-400 font-sans">Precio Compra: <span className="text-light-text">${item.priceBought.toLocaleString('es-CO')}</span></p>
+            <p className="text-gray-400 font-sans">Precio Venta: <span className="text-light-text">${item.priceSold.toLocaleString('es-CO')}</span></p>
+            <p className="text-gray-400 font-sans">Reorden: <span className="text-light-text">{item.restockQuantity}</span></p>
 
-            <div className="mt-2">
-              <button onClick={() => editItem(item)} className="bg-secondary text-black px-3 py-1 rounded mr-2">Editar</button>
-              <button onClick={() => deleteItem(item.id)} className="bg-red-600 text-white px-3 py-1 rounded">Eliminar</button>
+            <div className="mt-4 flex justify-end">
+              <button onClick={() => editItem(item)} className="bg-secondary hover:bg-light-accent text-dark-bg px-3 py-1 rounded-full mr-2 font-sans">Editar</button>
+              <button onClick={() => deleteItem(item.id)} className="bg-primary hover:bg-light-accent text-light-text px-3 py-1 rounded-full font-sans">Eliminar</button>
             </div>
           </div>
         ))}
       </div>
 
       {isItemModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-dark-bg p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold text-primary mb-4">{currentItem ? 'Editar Ítem' : 'Agregar Ítem'}</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm">
+          <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md border border-accent">
+            <h2 className="text-xl font-bold text-primary mb-4 font-graffiti">{currentItem ? 'Editar Ítem' : 'Agregar Ítem'}</h2>
             <form onSubmit={handleItemSubmit}>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="name">Nombre:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="name">Nombre:</label>
                 <input
                   type="text"
                   id="name"
                   value={itemFormData.name}
                   onChange={(e) => setItemFormData({ ...itemFormData, name: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="quantity">Cantidad:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="quantity">Cantidad:</label>
                 <input
                   type="number"
                   id="quantity"
                   value={itemFormData.quantity}
                   onChange={(e) => setItemFormData({ ...itemFormData, quantity: parseInt(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="priceBought">Precio de Compra:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="priceBought">Precio de Compra:</label>
                 <input
                   type="number"
                   id="priceBought"
                   value={itemFormData.priceBought}
                   onChange={(e) => setItemFormData({ ...itemFormData, priceBought: parseFloat(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="priceSold">Precio de Venta:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="priceSold">Precio de Venta:</label>
                 <input
                   type="number"
                   id="priceSold"
                   value={itemFormData.priceSold}
                   onChange={(e) => setItemFormData({ ...itemFormData, priceSold: parseFloat(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="unitType">Tipo de Unidad:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="unitType">Tipo de Unidad:</label>
                 <input
                   type="text"
                   id="unitType"
                   value={itemFormData.unitType}
                   onChange={(e) => setItemFormData({ ...itemFormData, unitType: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="restockQuantity">Cantidad de Reorden:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="restockQuantity">Cantidad de Reorden:</label>
                 <input
                   type="number"
                   id="restockQuantity"
                   value={itemFormData.restockQuantity}
                   onChange={(e) => setItemFormData({ ...itemFormData, restockQuantity: parseInt(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
                   required
                 />
               </div>
               <div className="flex justify-end">
-                <button type="submit" className="bg-primary text-white px-4 py-2 rounded mr-2">Guardar</button>
-                <button type="button" onClick={() => setIsItemModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit" className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mr-2 font-sans">Guardar</button>
+                <button type="button" onClick={() => setIsItemModalOpen(false)} className="bg-accent hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full font-sans">Cancelar</button>
               </div>
             </form>
           </div>

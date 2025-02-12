@@ -140,50 +140,50 @@ const Clients = () => {
   }, [clients, searchTerm, sortConfig]);
 
   return (
-    <div className="clients p-4">
-      <h1 className="text-2xl font-bold text-primary mb-4">Clientes</h1>
+    <div className="clients p-4 bg-street-gradient">
+      <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti">Clientes</h1>
 
       <input
         type="text"
         placeholder="Buscar..."
         value={searchTerm}
         onChange={handleSearchChange}
-        className="shadow appearance-none border rounded w-full py-2 px-3 mb-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+        className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 mb-4 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
       />
 
       <div className="mb-4">
-        <button onClick={() => requestSort('name')} className="mr-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => requestSort('name')} className="mr-2 bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
           Ordenar por Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
         </button>
-        <button onClick={() => requestSort('updatedAt')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => requestSort('updatedAt')} className="bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
           Ordenar por Reciente {sortConfig.key === 'updatedAt' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
         </button>
       </div>
 
-      <button onClick={addClient} className="bg-primary text-white px-4 py-2 rounded mb-4">Agregar Cliente</button>
+      <button onClick={addClient} className="bg-secondary hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full mb-4 font-sans">Agregar Cliente</button>
 
       <ul>
         {sortedAndFilteredClients.map(client => (
-          <li key={client.id} className="mb-6 border-b border-gray-700 pb-4">
+          <li key={client.id} className="mb-6 border-b border-gray-700 pb-4 bg-transparent-black bg-opacity-70 backdrop-blur-sm p-5 rounded-lg shadow-md-dark border border-gray-700">
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-xl text-light-text">{client.name}</h2>
-                <p className="text-gray-400">{client.contact}</p>
+                <h2 className="text-xl text-light-text font-sans">{client.name}</h2>
+                <p className="text-gray-400 font-sans">{client.contact}</p>
               </div>
               <div>
-                <button onClick={() => editClient(client)} className="bg-secondary text-black px-3 py-1 rounded mr-2">Editar</button>
-                <button onClick={() => deleteClient(client.id)} className="bg-red-600 text-white px-3 py-1 rounded mr-2">Eliminar</button>
-                <button onClick={() => addMotorcycle(client.id)} className="bg-green-500 text-white px-3 py-1 rounded">Agregar Moto</button>
+                <button onClick={() => editClient(client)} className="bg-secondary hover:bg-light-accent text-dark-bg px-3 py-1 rounded-full mr-2 font-sans">Editar</button>
+                <button onClick={() => deleteClient(client.id)} className="bg-primary hover:bg-light-accent text-light-text px-3 py-1 rounded-full mr-2 font-sans">Eliminar</button>
+                <button onClick={() => addMotorcycle(client.id)} className="bg-secondary hover:bg-light-accent text-dark-bg px-3 py-1 rounded-full font-sans">Agregar Moto</button>
               </div>
             </div>
             {client.motorcycles && client.motorcycles.length > 0 && (
               <ul className="mt-2">
                 {client.motorcycles.map(motorcycle => (
                   <li key={motorcycle.id} className="flex justify-between items-center mt-2">
-                    <div>{motorcycle.make} {motorcycle.model} {motorcycle.plate && `(${motorcycle.plate})`}</div>
+                    <div className="font-sans">{motorcycle.make} {motorcycle.model} {motorcycle.plate && `(${motorcycle.plate})`}</div>
                     <div>
-                      <button onClick={() => editMotorcycle(client, motorcycle)} className="bg-secondary text-black px-2 py-1 rounded mr-2 text-xs">Editar</button>
-                      <button onClick={() => deleteMotorcycle(client.id, motorcycle.id)} className="bg-red-600 text-white px-2 py-1 rounded text-xs">Eliminar</button>
+                      <button onClick={() => editMotorcycle(client, motorcycle)} className="bg-secondary hover:bg-light-accent text-dark-bg px-2 py-1 rounded-full mr-2 text-xs font-sans">Editar</button>
+                      <button onClick={() => deleteMotorcycle(client.id, motorcycle.id)} className="bg-primary hover:bg-light-accent text-light-text px-2 py-1 rounded-full text-xs font-sans">Eliminar</button>
                     </div>
                   </li>
                 ))}
@@ -194,35 +194,35 @@ const Clients = () => {
       </ul>
 
       {isClientModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-dark-bg p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold text-primary mb-4">{currentClient ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm">
+          <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md border border-accent">
+            <h2 className="text-xl font-bold text-primary mb-4 font-graffiti">{currentClient ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
             <form onSubmit={handleClientSubmit}>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="name">Nombre:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="name">Nombre:</label>
                 <input
                   type="text"
                   id="name"
                   value={clientFormData.name}
                   onChange={(e) => setClientFormData({ ...clientFormData, name: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="contact">Teléfono:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="contact">Teléfono:</label>
                 <input
                   type="text"
                   id="contact"
                   value={clientFormData.contact}
                   onChange={(e) => setClientFormData({ ...clientFormData, contact: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
                   required
                 />
               </div>
               <div className="flex justify-end">
-                <button type="submit" className="bg-primary text-white px-4 py-2 rounded mr-2">Guardar</button>
-                <button type="button" onClick={() => setIsClientModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit" className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mr-2 font-sans">Guardar</button>
+                <button type="button" onClick={() => setIsClientModalOpen(false)} className="bg-accent hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full font-sans">Cancelar</button>
               </div>
             </form>
           </div>
@@ -230,45 +230,45 @@ const Clients = () => {
       )}
 
       {isMotorcycleModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-dark-bg p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold text-primary mb-4">{motorcycleFormData.id ? 'Editar Moto' : 'Agregar Moto'}</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm">
+          <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md border border-accent">
+            <h2 className="text-xl font-bold text-primary mb-4 font-graffiti">{motorcycleFormData.id ? 'Editar Moto' : 'Agregar Moto'}</h2>
             <form onSubmit={handleMotorcycleSubmit}>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="make">Marca:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="make">Marca:</label>
                 <input
                   type="text"
                   id="make"
                   value={motorcycleFormData.make}
                   onChange={(e) => setMotorcycleFormData({ ...motorcycleFormData, make: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="model">Modelo:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="model">Modelo:</label>
                 <input
                   type="text"
                   id="model"
                   value={motorcycleFormData.model}
                   onChange={(e) => setMotorcycleFormData({ ...motorcycleFormData, model: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="plate">Placa:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="plate">Placa:</label>
                 <input
                   type="text"
                   id="plate"
                   value={motorcycleFormData.plate}
                   onChange={(e) => setMotorcycleFormData({ ...motorcycleFormData, plate: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
                 />
               </div>
               <div className="flex justify-end">
-                <button type="submit" className="bg-primary text-white px-4 py-2 rounded mr-2">Guardar</button>
-                <button type="button" onClick={() => setIsMotorcycleModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit" className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mr-2 font-sans">Guardar</button>
+                <button type="button" onClick={() => setIsMotorcycleModalOpen(false)} className="bg-accent hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full font-sans">Cancelar</button>
               </div>
             </form>
           </div>

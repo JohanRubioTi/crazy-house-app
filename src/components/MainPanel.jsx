@@ -239,16 +239,16 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
 
 
     return (
-        <div className="main-panel p-4">
-            <h1 className="text-2xl font-bold text-primary mb-4">Panel Principal</h1>
+        <div className="main-panel p-6 bg-street-gradient shadow-md-dark rounded-xl">
+            <h1 className="text-3xl font-graffiti text-street-yellow mb-6">Panel Principal</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Alerts */}
-                <div className="bg-dark-bg p-4 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold text-light-text mb-2">Alertas</h2>
-                    <ul>
+                <div className="bg-transparent-black bg-opacity-70 backdrop-blur-sm p-5 rounded-lg shadow-md-dark border border-gray-700">
+                    <h2 className="text-lg font-semibold text-accent mb-3 font-graffiti">Alertas</h2>
+                    <ul className="list-none pl-0">
                         {alerts.map(alert => (
-                            <li key={alert.id} className={`text-yellow-400 ${alert.type === 'low-stock' ? 'text-red-500' : ''}`}>
+                            <li key={alert.id} className={`text-street-yellow mb-1 ${alert.type === 'low-stock' ? 'text-accent' : ''}`}>
                                 {alert.message}
                             </li>
                         ))}
@@ -256,37 +256,38 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                 </div>
 
                 {/* Earnings & Expenses Summary */}
-                <div className="bg-dark-bg p-4 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold text-light-text mb-2">Resumen</h2>
-                    <p className="text-green-500">Ganancias: ${earnings.toLocaleString('es-CO')}</p>
-                    <p className="text-red-500">Gastos: ${totalExpenses.toLocaleString('es-CO')}</p>
-                    <button onClick={addExpense} className="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                <div className="bg-transparent-black bg-opacity-70 backdrop-blur-sm p-5 rounded-lg shadow-md-dark border border-gray-700">
+                    <h2 className="text-lg font-semibold text-secondary mb-3 font-graffiti">Resumen</h2>
+                    <p className="text-green-500 text-xl font-bold text-street-yellow">Ganancias: <span className="text-secondary">${earnings.toLocaleString('es-CO')}</span></p>
+                    <p className="text-red-500 text-xl font-bold text-street-yellow">Gastos: <span className="text-primary">${totalExpenses.toLocaleString('es-CO')}</span></p>
+                    <button onClick={addExpense} className="mt-4 bg-secondary hover:bg-secondary-dark text-street-black font-bold py-2 px-6 rounded-full transition-colors duration-300 shadow-md font-sans">
                         Añadir Gasto
                     </button>
                 </div>
             </div>
 
             {/* Charts */}
-            <div className="bg-dark-bg p-4 rounded-lg shadow-md mb-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-light-text">Gráficos</h2>
+            <div className="bg-transparent-black bg-opacity-70 backdrop-blur-sm p-6 rounded-lg shadow-md-dark border border-gray-700 mb-8">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-semibold text-light-text font-graffiti">Gráficos</h2>
                     <button
                         onClick={() => setChartView(chartView === 'weekly' ? 'monthly' : 'weekly')}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        className="bg-accent hover:bg-accent-dark text-street-black font-bold py-2 px-4 rounded-full transition-colors duration-300 shadow-md font-sans"
                     >
-                        {chartView === 'weekly' ? 'Ver Mensual' : 'Ver Semanal'}
+                        {chartView === 'weekly' ? 'Mensual' : 'Semanal'}
                     </button>
                 </div>
 
-                <h3 className="text-md font-semibold text-light-text mb-2">Gastos y Ganancias ({chartView === 'weekly' ? 'Semanal' : 'Mensual'})</h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <h3 className="text-md font-semibold text-secondary-text mb-3 text-street-yellow">Gastos y Ganancias ({chartView === 'weekly' ? 'Semanal' : 'Mensual'})</h3>
+                <ResponsiveContainer width="100%" height={350}>
                     <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                         <XAxis dataKey="name" tick={{ fill: '#d1d5db' }} />
                         <YAxis tick={{ fill: '#d1d5db' }} />
                         <Tooltip
-                          contentStyle={{ backgroundColor: '#4a5568', color: '#cbd5e0' }}
+                          contentStyle={{ backgroundColor: '#4a5568', color: '#cbd5e0', borderRadius: '8px' }}
                           itemStyle={{ color: '#cbd5e0' }}
+                          wrapperClassName="rounded-md shadow-lg"
                         />
                         <Legend wrapperStyle={{ color: '#d1d5db' }}
                                  formatter={(value) => {
@@ -294,82 +295,84 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                                      if (value === 'gastos') return 'Gastos';
                                      return value;
                                  }}/>
-                        <Line type="monotone" dataKey="ganancias" stroke="#82ca9d" name="Ganancias" activeDot={{ r: 8 }} />
-                        <Line type="monotone" dataKey="gastos" stroke="#e74c3c" name="Gastos" />
+                        <Line type="monotone" dataKey="ganancias" stroke="#82ca9d" name="Ganancias" activeDot={{ r: 8 }} strokeWidth={2} />
+                        <Line type="monotone" dataKey="gastos" stroke="#e74c3c" name="Gastos" strokeWidth={2} />
                     </LineChart>
                 </ResponsiveContainer>
             </div>
 
             {/* Dynamic Inventory Levels Display */}
-            <div className="bg-dark-bg p-4 rounded-lg shadow-md mb-4">
-                <h2 className="text-lg font-semibold text-light-text mb-2">Niveles de Inventario</h2>
-                <table className="w-full">
-                    <thead>
-                        <tr className="text-light-text">
-                            <th className="px-4 py-2 text-left">Producto</th>
-                            <th className="px-4 py-2 text-left">Cantidad</th>
-                            <th className="px-4 py-2 text-left">Reorden</th>
-                            <th className="px-4 py-2 text-left">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items && items.map(item => (
-                            <tr key={item.id} className="text-gray-400">
-                                <td className="border px-4 py-2">{item.name}</td>
-                                <td className="border px-4 py-2">{item.quantity} {item.unitType}</td>
-                                <td className="border px-4 py-2">{item.restockQuantity} {item.unitType}</td>
-                                <td className="border px-4 py-2">
-                                    {item.quantity < item.restockQuantity ? (
-                                        <span className="text-red-500">Bajo Stock</span>
-                                    ) : (
-                                        <span className="text-green-500">En Stock</span>
-                                    )}
-                                </td>
+            <div className="bg-transparent-black bg-opacity-70 backdrop-blur-sm p-6 rounded-lg shadow-md-dark border border-gray-700 mb-8">
+                <h2 className="text-xl font-semibold text-light-text font-graffiti">Niveles de Inventario</h2>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full table-fixed">
+                        <thead>
+                            <tr className="text-secondary-text text-street-yellow">
+                                <th className="px-4 py-3 text-left text-sm font-semibold font-sans">Producto</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold font-sans">Cantidad</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold font-sans">Reorden</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold font-sans">Estado</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {items && items.map(item => (
+                                <tr key={item.id} className="text-secondary-text hover:bg-dark-bg transition-colors duration-200">
+                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.name}</td>
+                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.quantity} {item.unitType}</td>
+                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.restockQuantity} {item.unitType}</td>
+                                    <td className="px-4 py-3 text-street-yellow font-sans">
+                                        {item.quantity < item.restockQuantity ? (
+                                            <span className="text-accent font-semibold font-sans">Bajo Stock</span>
+                                        ) : (
+                                            <span className="text-secondary font-semibold font-sans">En Stock</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
 
             {/* Statistical Analysis */}
             <StatisticsPanel items={items} expenses={expenses} services={services} />
 
-            {/* Expenses Table */}
+            {/* Expenses Table - Consider moving to a separate component if MainPanel gets too long */}
             {/* ... (rest of the component remains unchanged) */}
 
             {/* Expense Modal */}
             {isExpenseModalOpen && (
-                <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center">
-                    <div className="bg-dark-bg rounded-lg p-8 w-full max-w-md">
-                        <h2 className="text-xl font-bold text-light-text mb-4">{currentExpense ? 'Editar Gasto' : 'Añadir Gasto'}</h2>
-                        <form onSubmit={handleExpenseSubmit} className="space-y-4">
+                <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center backdrop-blur-sm">
+                    <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md rounded-lg p-8 w-full max-w-md shadow-lg border border-accent">
+                        <h2 className="text-2xl font-bold text-street-yellow mb-6 font-graffiti">{currentExpense ? 'Editar Gasto' : 'Añadir Gasto'}</h2>
+                        <form onSubmit={handleExpenseSubmit} className="space-y-5">
                             <div>
-                                <label htmlFor="description" className="block text-gray-300 text-sm font-bold mb-2">Descripción</label>
-                                <input type="text" id="description" name="description" value={expenseFormData.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-darker-bg leading-tight focus:outline-none focus:shadow-outline" />
+                                <label htmlFor="description" className="block text-secondary-text text-sm font-bold mb-2 text-street-yellow font-sans">Descripción</label>
+                                <input type="text" id="description" name="description" value={expenseFormData.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-dark-bg leading-tight focus:outline-none focus:shadow-outline border-gray-600 font-sans" />
                             </div>
                             <div>
-                                <label htmlFor="amount" className="block text-gray-300 text-sm font-bold mb-2">Monto</label>
-                                <input type="number" id="amount" name="amount" value={expenseFormData.amount} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-darker-bg leading-tight focus:outline-none focus:shadow-outline" />
+                                <label htmlFor="amount" className="block text-secondary-text text-sm font-bold mb-2 text-street-yellow font-sans">Monto</label>
+                                <input type="number" id="amount" name="amount" value={expenseFormData.amount} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-dark-bg leading-tight focus:outline-none focus:shadow-outline border-gray-600 font-sans" />
                             </div>
                             <div>
-                                <label htmlFor="date" className="block text-gray-300 text-sm font-bold mb-2">Fecha</label>
-                                <input type="date" id="date" name="date" value={expenseFormData.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-darker-bg leading-tight focus:outline-none focus:shadow-outline" />
+                                <label htmlFor="date" className="block text-secondary-text text-sm font-bold mb-2 text-street-yellow font-sans">Fecha</label>
+                                <input type="date" id="date" name="date" value={expenseFormData.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-dark-bg leading-tight focus:outline-none focus:shadow-outline border-gray-600 font-sans" />
                             </div>
                             <div>
-                                <label htmlFor="category" className="block text-gray-300 text-sm font-bold mb-2">Categoría</label>
-                                <select id="category" name="category" value={expenseFormData.category} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-darker-bg leading-tight focus:outline-none focus:shadow-outline">
+                                <label htmlFor="category" className="block text-secondary-text text-sm font-bold mb-2 text-street-yellow font-sans">Categoría</label>
+                                <select id="category" name="category" value={expenseFormData.category} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-light-text bg-dark-bg leading-tight focus:outline-none focus:shadow-outline border-gray-600 font-sans">
                                     <option value="">Seleccionar Categoría</option>
                                     {expenseCategories.map(category => (
                                         <option key={category} value={category}>{category}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex justify-between">
-                                <button type="submit" className="bg-primary hover:bg-primary-dark text-dark-text font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                    {currentExpense ? 'Guardar Gasto' : 'Añadir Gasto'}
+                            <div className="flex justify-between mt-6">
+                                <button type="submit" className="bg-secondary hover:bg-secondary-dark text-street-black font-bold py-2 px-6 rounded-full focus:outline-none focus:shadow-outline shadow-md transition-colors duration-300 font-sans">
+                                    {currentExpense ? 'Guardar' : 'Añadir'}
                                 </button>
-                                <button type="button" onClick={closeExpenseModal} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <button type="button" onClick={closeExpenseModal} className="bg-primary hover:bg-primary-dark text-light-text font-bold py-2 px-6 rounded-full focus:outline-none focus:shadow-outline shadow-md transition-colors duration-300 font-sans">
                                     Cancelar
                                 </button>
                             </div>

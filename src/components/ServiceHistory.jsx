@@ -209,24 +209,24 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
   }, [services, searchTerm, sortConfig, clients, motorcycles]);
 
   return (
-    <div className="service-history p-4">
-      <h1 className="text-2xl font-bold text-primary mb-4">Historial de Servicio</h1>
+    <div className="service-history p-4 bg-street-gradient">
+      <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti">Historial de Servicio</h1>
 
       <input
         type="text"
         placeholder="Buscar..."
         value={searchTerm}
         onChange={handleSearchChange}
-        className="shadow appearance-none border rounded w-full py-2 px-3 mb-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+        className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 mb-4 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
       />
 
       <div className="mb-4">
-        <button onClick={() => requestSort('date')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => requestSort('date')} className="bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
           Ordenar por Fecha {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
         </button>
       </div>
 
-      <button onClick={addService} className="bg-primary text-white px-4 py-2 rounded mb-4">Agregar Servicio</button>
+      <button onClick={addService} className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mb-4 font-sans">Agregar Servicio</button>
 
       <div className="grid grid-cols-1 gap-4">
         {sortedAndFilteredServices.map(service => {
@@ -234,32 +234,38 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
             const motorcycle = motorcycles.find(m => m.id === service.motorcycleId);
 
             return (
-          <div key={service.id} className="bg-dark-bg p-4 rounded-lg shadow-md">
-            <h2 className="text-xl text-light-text">
-                Servicio para {client ? client.name : 'Cliente Desconocido'} - {motorcycle ? `${motorcycle.make} ${motorcycle.model}` : 'Moto Desconocida'}
+          <div key={service.id} className="bg-transparent-black bg-opacity-70 backdrop-blur-sm p-6 rounded-lg shadow-md-dark border border-gray-700">
+            <h2 className="text-xl text-light-text font-sans mb-3">
+                Servicio para <b className="font-bold text-secondary-text">{client ? client.name : 'Cliente Desconocido'}</b>
             </h2>
-            <p className="text-gray-400"><b>Fecha:</b> {new Date(service.date).toLocaleDateString('es-CO')}</p>
-            <p className="text-gray-400"><b>Mano de Obra:</b> ${parseFloat(service.laborCost).toLocaleString('es-CO')}</p>
-            <p className="text-gray-400">
-                <b>Productos:</b>
+            <h3 className="text-lg text-light-text font-sans mb-3">
+                Moto: <b className="font-bold text-secondary-text">{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : 'Moto Desconocida'}</b>
+            </h3>
+            <div className="mb-2">
+                <p className="text-gray-400 font-sans"><b className="text-light-text">Fecha:</b> {new Date(service.date).toLocaleDateString('es-CO')}</p>
+                <p className="text-gray-400 font-sans"><b className="text-light-text">Mano de Obra:</b> ${parseFloat(service.laborCost).toLocaleString('es-CO')}</p>
+                <p className="text-gray-400 font-sans"><b className="text-light-text">Valor Total:</b> ${parseFloat(service.totalValue).toLocaleString('es-CO')}</p>
+            </div>
+            <div className="mb-2">
+                <p className="text-gray-400 font-sans"><b className="text-light-text">Productos:</b></p>
                 {service.productsUsed.length > 0 ? (
-                    <ul>
+                    <ul className="list-disc pl-5">
                         {service.productsUsed.map(p => (
-                            <li key={p.productId}>
+                            <li key={p.productId} className="font-sans text-gray-400">
                                 {p.name} x{p.quantity} - ${parseFloat(p.price).toLocaleString('es-CO')} c/u
                             </li>
                         ))}
                     </ul>
-                ) : 'Ninguno'}
-            </p>
-            <p className="text-gray-400"><b>Valor Total:</b> ${parseFloat(service.totalValue).toLocaleString('es-CO')}</p>
-            <p className="text-gray-400"><b>Tipo de Servicio:</b> {service.serviceType || 'No especificado'}</p>
-            <p className="text-gray-400"><b>Kilometraje:</b> {service.kilometers} km</p>
-            <p className="text-gray-400"><b>Notas:</b> {service.notes || 'Ninguna'}</p>
+                ) : <p className="text-gray-400 font-sans">Ninguno</p>}
+            </div>
 
-            <div className="mt-2">
-              <button onClick={() => editService(service)} className="bg-secondary text-black px-3 py-1 rounded mr-2">Editar</button>
-              <button onClick={() => deleteService(service.id)} className="bg-red-600 text-white px-3 py-1 rounded">Eliminar</button>
+            <p className="text-gray-400 font-sans mb-2"><b className="text-light-text">Tipo de Servicio:</b> {service.serviceType || 'No especificado'}</p>
+            <p className="text-gray-400 font-sans mb-2"><b className="text-light-text">Kilometraje:</b> {service.kilometers} km</p>
+            <p className="text-gray-400 font-sans mb-3"><b className="text-light-text">Notas:</b> {service.notes || 'Ninguna'}</p>
+
+            <div className="mt-4 flex justify-end">
+              <button onClick={() => editService(service)} className="bg-secondary hover:bg-light-accent text-dark-bg px-3 py-1 rounded-full mr-2 font-sans">Editar</button>
+              <button onClick={() => deleteService(service.id)} className="bg-primary hover:bg-light-accent text-light-text px-3 py-1 rounded-full font-sans">Eliminar</button>
             </div>
           </div>
         );
@@ -267,17 +273,17 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
       </div>
 
       {isServiceModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-dark-bg p-6 rounded-lg shadow-lg w-full max-w-2xl">
-            <h2 className="text-xl font-bold text-primary mb-4">{currentService ? 'Editar Servicio' : 'Agregar Servicio'}</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm">
+          <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-2xl border border-accent">
+            <h2 className="text-xl font-bold text-primary mb-4 font-graffiti">{currentService ? 'Editar Servicio' : 'Agregar Servicio'}</h2>
             <form onSubmit={handleServiceSubmit} className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="clientId">Cliente:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="clientId">Cliente:</label>
                 <select
                   id="clientId"
                   value={serviceFormData.clientId}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, clientId: parseInt(e.target.value) })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                   required
                 >
                   <option value="">Selecciona un cliente</option>
@@ -288,12 +294,12 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
               </div>
 
               <div>
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="motorcycleId">Moto:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="motorcycleId">Moto:</label>
                 <select
                   id="motorcycleId"
                   value={serviceFormData.motorcycleId}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, motorcycleId: parseInt(e.target.value) })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                   required
                 >
                   <option value="">Selecciona una moto</option>
@@ -304,70 +310,70 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
               </div>
 
               <div>
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="laborCost">Valor Mano de Obra:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="laborCost">Valor Mano de Obra:</label>
                 <input
                   type="number"
                   id="laborCost"
                   value={serviceFormData.laborCost}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, laborCost: parseFloat(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="date">Fecha:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="date">Fecha:</label>
                 <input
                   type="date"
                   id="date"
                   value={serviceFormData.date}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, date: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                 />
               </div>
 
               <div>
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="serviceType">Tipo de Servicio:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="serviceType">Tipo de Servicio:</label>
                 <input
                   type="text"
                   id="serviceType"
                   value={serviceFormData.serviceType}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, serviceType: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                 />
               </div>
 
               <div>
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="kilometers">Kilometraje:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="kilometers">Kilometraje:</label>
                 <input
                   type="number"
                   id="kilometers"
                   value={serviceFormData.kilometers}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, kilometers: parseInt(e.target.value) || 0 })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                 />
               </div>
                 <div className="col-span-2">
-                <label className="block text-light-text text-sm font-bold mb-2" htmlFor="notes">Notas:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="notes">Notas:</label>
                 <textarea
                   id="notes"
                   value={serviceFormData.notes}
                   onChange={(e) => setServiceFormData({ ...serviceFormData, notes: e.target.value })}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                   rows="3"
                 />
               </div>
 
               <div className="col-span-2">
-                <label className="block text-light-text text-sm font-bold mb-2">Productos Usados:</label>
+                <label className="block text-light-text text-sm font-bold mb-2 font-sans">Productos Usados:</label>
                 <ul>
                   {serviceFormData.productsUsed.map(product => (
-                    <li key={product.productId} className="flex items-center justify-between mb-1">
+                    <li key={product.productId} className="flex items-center justify-between mb-1 font-sans">
                       <span>{product.name} x{product.quantity}</span>
                       <button
                         type="button"
                         onClick={() => removeProductFromService(product.productId)}
-                        className="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                        className="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded-full text-xs font-sans"
                       >
                         Eliminar
                       </button>
@@ -376,7 +382,7 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
                 </ul>
                 <div className="flex items-end">
                     <select
-                        className="shadow appearance-none border rounded w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200 mr-2"
+                        className="shadow appearance-none border border-gray-700 rounded w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text mr-2"
                         onChange={(e) => {
                             if (e.target.value) {
                                 addProductToService(parseInt(e.target.value), 1);
@@ -393,7 +399,7 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
                         type="number"
                         placeholder="Cantidad"
                         min="1"
-                        className="shadow appearance-none border rounded w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-200"
+                        className="shadow appearance-none border border-gray-700 rounded w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
@@ -410,8 +416,8 @@ const ServiceHistory = ({ services: propServices, onUpdateServices }) => {
               </div>
 
               <div className="col-span-2 flex justify-end">
-                <button type="submit" className="bg-primary text-white px-4 py-2 rounded mr-2">Guardar</button>
-                <button type="button" onClick={() => setIsServiceModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit" className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mr-2 font-sans">Guardar</button>
+                <button type="button" onClick={() => setIsServiceModalOpen(false)} className="bg-accent hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full font-sans">Cancelar</button>
               </div>
             </form>
           </div>
