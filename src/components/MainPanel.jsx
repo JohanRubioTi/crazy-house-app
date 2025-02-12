@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatisticsPanel from './StatisticsPanel';
 
-const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUpdateExpenses }) => {
+const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUpdateExpenses, onLogout }) => {
     const [expenses, setExpenses] = useState(propExpenses || []);
     const [services, setServices] = useState(propServices || []);
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -240,7 +240,13 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
 
     return (
         <div className="main-panel p-6 bg-street-gradient shadow-md-dark rounded-xl">
-            <h1 className="text-3xl font-graffiti text-street-yellow mb-6">Panel Principal</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-graffiti text-street-yellow">Panel Principal</h1>
+                <button onClick={onLogout} className="bg-primary hover:bg-light-accent text-light-text font-bold py-2 px-4 rounded-full font-sans focus:outline-none focus:shadow-outline">
+                    Logout
+                </button>
+            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Alerts */}
