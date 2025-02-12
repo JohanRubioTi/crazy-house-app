@@ -13,6 +13,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // New state for password confirmation
+  const [isSignUp, setIsSignUp] = useState(false); // State to toggle between Login and Register forms
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -79,6 +81,11 @@ function App() {
 
   async function handleSignUp() {
     setLoading(true)
+    if (password !== confirmPassword) {
+      alert("Las contraseñas no coinciden");
+      setLoading(false);
+      return;
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -87,7 +94,7 @@ function App() {
     if (error) {
       alert(error.message)
     } else {
-      alert('Check your email for confirmation!');
+      alert('Revisa tu correo electrónico para confirmación!');
     }
     setLoading(false)
   }
@@ -114,36 +121,75 @@ function App() {
 
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="app-container bg-street-gradient flex justify-center items-center h-screen">
+        <div className="text-center">
+          <div className="spinner mb-4"></div>
+          <p className="text-light-text font-sans">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
     return (
       <div className="app-container bg-street-gradient flex justify-center items-center h-screen">
         <div className="card bg-transparent-black bg-opacity-70 backdrop-blur-sm p-6 rounded-lg shadow-md-dark border border-gray-700 w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti text-center">Login / Signup</h1>
-          <input
-            className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-2"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-4"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <div className="flex justify-between">
-            <button onClick={handleLogin} className="bg-secondary hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans focus:outline-none focus:shadow-outline">
-              Login
-            </button>
-            <button onClick={handleSignUp} className="bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans focus:outline-none focus:shadow-outline">
-              Sign Up
-            </button>
-          </div>
+          <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti text-center">{isSignUp ? 'Regístrate' : 'Iniciar Sesión'}</h1>
+          {isSignUp ? (
+            <div> {/* Register Form */}
+              <input
+                className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-2"
+                type="email"
+                placeholder="Correo Electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-2"
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <input
+                className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-4"
+                type="password"
+                placeholder="Confirmar Contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button onClick={handleSignUp} className="bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans focus:outline-none focus:shadow-outline w-full">
+                Registrarse
+              </button>
+              <button onClick={() => setIsSignUp(false)} className="mt-2 text-secondary-text hover:text-light-text text-sm font-sans focus:outline-none focus:shadow-outline w-full block text-center">
+                ¿Ya tienes una cuenta? Iniciar Sesión
+              </button>
+            </div>
+          ) : ( // Login Form
+            <div>
+              <input
+                className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-2"
+                type="email"
+                placeholder="Correo Electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-4"
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button onClick={handleLogin} className="bg-secondary hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans focus:outline-none focus:shadow-outline w-full">
+                Iniciar Sesión
+              </button>
+              <button onClick={() => setIsSignUp(true)} className="mt-2 text-secondary-text hover:text-light-text text-sm font-sans focus:outline-none focus:shadow-outline w-full block text-center">
+                ¿No tienes una cuenta? Regístrate
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

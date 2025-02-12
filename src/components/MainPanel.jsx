@@ -60,7 +60,7 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                     newAlerts.push({
                         id: `stock-${item.id}`,
                         type: 'low-stock',
-                        message: `Bajo stock de ${item.name} (${item.quantity} ${item.unitType} restantes)`,
+                        message: `Stock bajo de ${item.name} (${item.quantity} ${item.unitType} restantes)`,
                     });
                 }
             });
@@ -240,13 +240,12 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
 
     return (
         <div className="main-panel p-6 bg-street-gradient shadow-md-dark rounded-xl">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-graffiti text-street-yellow">Panel Principal</h1>
+            <div className="flex justify-end">
                 <button onClick={onLogout} className="bg-primary hover:bg-light-accent text-light-text font-bold py-2 px-4 rounded-full font-sans focus:outline-none focus:shadow-outline">
-                    Logout
+                    Cerrar Sesión
                 </button>
             </div>
-
+            <h1 className="text-3xl font-graffiti text-street-yellow mb-6">Panel Principal</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Alerts */}
