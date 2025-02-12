@@ -1,16 +1,16 @@
 import React from 'react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 const DashboardCharts = ({ expenses, services, items }) => {
   // Process data for time-based charts (group by month)
   const processTimeData = () => {
     const monthMap = new Map();
-    
+
     // Process expenses
     expenses.forEach(expense => {
       const date = new Date(expense.date);
       const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      
+
       if (!monthMap.has(monthKey)) {
         monthMap.set(monthKey, {
           month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
@@ -26,7 +26,7 @@ const DashboardCharts = ({ expenses, services, items }) => {
     services.forEach(service => {
       const date = new Date(service.date);
       const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      
+
       if (!monthMap.has(monthKey)) {
         monthMap.set(monthKey, {
           month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
@@ -35,10 +35,10 @@ const DashboardCharts = ({ expenses, services, items }) => {
           inventoryRevenue: 0
         });
       }
-      
-      const serviceRevenue = service.laborCost + 
+
+      const serviceRevenue = service.laborCost +
         service.productsUsed.reduce((acc, p) => acc + (p.quantity * p.price), 0);
-      
+
       monthMap.get(monthKey).servicesRevenue += serviceRevenue;
     });
 
@@ -46,7 +46,7 @@ const DashboardCharts = ({ expenses, services, items }) => {
     items.forEach(item => {
       const date = new Date(item.updatedAt);
       const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      
+
       if (!monthMap.has(monthKey)) {
         monthMap.set(monthKey, {
           month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
@@ -58,7 +58,7 @@ const DashboardCharts = ({ expenses, services, items }) => {
       monthMap.get(monthKey).inventoryRevenue += item.quantity * item.priceSold;
     });
 
-    return Array.from(monthMap.values()).sort((a, b) => 
+    return Array.from(monthMap.values()).sort((a, b) =>
       new Date(a.month) - new Date(b.month)
     );
   };
@@ -70,12 +70,13 @@ const DashboardCharts = ({ expenses, services, items }) => {
     return acc;
   }, {});
 
-  // Process inventory data
-  const inventoryData = items.map(item => ({
+  // Process inventory data for value distribution
+  const inventoryValueData = items.map(item => ({
     name: item.name,
-    value: item.quantity,
-    color: item.quantity < item.restockQuantity ? '#ff3c3c' : '#3cff99'
+    value: item.quantity * item.priceSold, // Calculate total value for each item
+    fill: item.quantity < item.restockQuantity ? '#ff3c3c' : '#3cff99' // Keep color logic
   }));
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
@@ -86,29 +87,29 @@ const DashboardCharts = ({ expenses, services, items }) => {
           <LineChart data={processTimeData()}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="month" stroke="#f0f0f0" />
-            <YAxis stroke="#f0f0f0" />
-            <Tooltip 
+            <YAxis stroke="#f0f0f0" stroke="#f0f0f0"/>
+            <Tooltip
               contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}
             />
-            <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="servicesRevenue" 
+            <Legend wrapperStyle={{ color: '#f0f0f0' }}/>
+            <Line
+              type="monotone"
+              dataKey="servicesRevenue"
               name="Ingresos Servicios"
               stroke="#3cff99"
               strokeWidth={2}
             />
-            <Line 
-              type="monotone" 
-              dataKey="inventoryRevenue" 
+            <Line
+              type="monotone"
+              dataKey="inventoryRevenue"
               name="Inventario Potencial"
               stroke="#f5a623"
               strokeWidth={2}
             />
-            <Line 
-              type="monotone" 
-              dataKey="expenses" 
+            <Line
+              type="monotone"
+              dataKey="expenses"
               name="Gastos"
               stroke="#ff3c3c"
               strokeWidth={2}
@@ -124,13 +125,13 @@ const DashboardCharts = ({ expenses, services, items }) => {
           <BarChart data={Object.entries(expenseCategories).map(([name, value]) => ({ name, value }))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="name" stroke="#f0f0f0" />
-            <YAxis stroke="#f0f0f0" />
-            <Tooltip 
+            <YAxis stroke="#f0f0f0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} />
+            <Tooltip
               contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}
             />
-            <Bar 
-              dataKey="value" 
+            <Bar
+              dataKey="value"
               fill="#ff3c3c"
               name="Gastos por Categoría"
             />
@@ -138,31 +139,29 @@ const DashboardCharts = ({ expenses, services, items }) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Inventory Pie Chart */}
+      {/* Inventory Value Distribution Bar Chart */}
       <div className="bg-dark-bg p-4 rounded-lg h-64">
-        <h3 className="text-light-text mb-2">Distribución de Inventario</h3>
+        <h3 className="text-light-text mb-2">Valor de Inventario por Producto</h3>
         <ResponsiveContainer width="100%" height="90%">
-          <PieChart>
-            <Pie
-              data={inventoryData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              label={({ name, value }) => `${name}: ${value}`}
-            >
-              {inventoryData.map((entry, index) => (
-                <cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip 
+          <BarChart data={inventoryValueData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis dataKey="name" stroke="#f0f0f0" />
+            <YAxis stroke="#f0f0f0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} />
+            <Tooltip
               contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
-              formatter={(value) => `${value} unidades`}
+              formatter={(value) => `$${value.toLocaleString('es-CO')}`}
             />
-            <Legend />
-          </PieChart>
+            <Bar
+              dataKey="value"
+              name="Valor Inventario"
+              barSize={20}
+              label={{ position: 'top', formatter: (value) => `$${(value/1000).toFixed(0)}k` }}
+            >
+              {inventoryValueData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>

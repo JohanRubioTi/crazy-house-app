@@ -18,7 +18,6 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
     const [earnings, setEarnings] = useState(0);
     const [totalExpenses, setTotalExpenses] = useState(0);
     const [chartData, setChartData] = useState([]);
-    const [inventoryChartData, setInventoryChartData] = useState([]);
     const [chartView, setChartView] = useState('weekly');
     const expenseCategories = ['Repuestos', 'Combustible', 'Arriendo', 'Salarios', 'Marketing', 'Otros'];
 
@@ -161,24 +160,10 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
     useEffect(() => {
         if (chartView === 'weekly') {
             setChartData(generateWeeklyChartData(expenses, services));
-            if (items) {
-                const dummyInventoryData = items.map(item => ({
-                    date: Date.now() - (Math.random() * 604800000),
-                    quantity: item.quantity + Math.floor(Math.random() * 20) - 10,
-                }));
-                setInventoryChartData(generateWeeklyChartData(dummyInventoryData, [])); // Inventory chart only needs quantity, services not relevant here
-            }
         } else {
             setChartData(generateMonthlyChartData(expenses, services));
-            if (items) {
-                const dummyInventoryData = items.map(item => ({
-                    date: Date.now() - (Math.random() * 2592000000),
-                    quantity: item.quantity + Math.floor(Math.random() * 50) - 25,
-                }));
-                setInventoryChartData(generateMonthlyChartData(dummyInventoryData, [])); // Inventory chart only needs quantity, services not relevant here
-            }
         }
-    }, [expenses, services, items, chartView]);
+    }, [expenses, services, chartView]);
 
 
     const addExpense = () => {
@@ -313,48 +298,39 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                         <Line type="monotone" dataKey="gastos" stroke="#e74c3c" name="Gastos" />
                     </LineChart>
                 </ResponsiveContainer>
-
-                <h3 className="text-md font-semibold text-light-text mt-8 mb-2">Niveles de Inventario ({chartView === 'weekly' ? 'Semanal' : 'Mensual'})</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={inventoryChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fill: '#d1d5db' }} />
-                        <YAxis tick={{ fill: '#d1d5db' }} />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: '#4a5568', color: '#cbd5e0' }}
-                          itemStyle={{ color: '#cbd5e0' }}
-                        />
-                        <Legend wrapperStyle={{ color: '#d1d5db' }}
-                                formatter={(value) => {
-                                    if (value === 'quantity') return 'Cantidad';
-                                    return value;
-                                }}/>
-                        <Line type="monotone" dataKey="quantity" stroke="#68d391" name="Cantidad" />
-                    </LineChart>
-                </ResponsiveContainer>
             </div>
 
-            {/* Current Inventory Levels */}
-            {/* ... (rest of the component remains unchanged) */}
-             <div className="bg-dark-bg p-4 rounded-lg shadow-md mb-4">
-                <h2 className="text-lg font-semibold text-light-text mb-2">Niveles Actuales de Inventario</h2>
+            {/* Dynamic Inventory Levels Display */}
+            <div className="bg-dark-bg p-4 rounded-lg shadow-md mb-4">
+                <h2 className="text-lg font-semibold text-light-text mb-2">Niveles de Inventario</h2>
                 <table className="w-full">
                     <thead>
                         <tr className="text-light-text">
                             <th className="px-4 py-2 text-left">Producto</th>
                             <th className="px-4 py-2 text-left">Cantidad</th>
+                            <th className="px-4 py-2 text-left">Reorden</th>
+                            <th className="px-4 py-2 text-left">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {items && items.map(item => (
                             <tr key={item.id} className="text-gray-400">
                                 <td className="border px-4 py-2">{item.name}</td>
-                                <td className="border px-4 py-2">{item.quantity}</td>
+                                <td className="border px-4 py-2">{item.quantity} {item.unitType}</td>
+                                <td className="border px-4 py-2">{item.restockQuantity} {item.unitType}</td>
+                                <td className="border px-4 py-2">
+                                    {item.quantity < item.restockQuantity ? (
+                                        <span className="text-red-500">Bajo Stock</span>
+                                    ) : (
+                                        <span className="text-green-500">En Stock</span>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
 
             {/* Statistical Analysis */}
             <StatisticsPanel items={items} expenses={expenses} services={services} />
