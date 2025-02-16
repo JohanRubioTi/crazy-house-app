@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAtom } from 'jotai';
+import { clientsAtom } from '../atoms';
+import {
+  fetchClients,
+  updateClient,
+  insertClient,
+  deleteClientAndMotorcycles,
+  updateMotorcycle,
+  insertMotorcycle,
+  deleteMotorcycle
+} from '../supabaseService';
 
 const Clients = () => {
-  const [clients, setClients] = useState([]);
+  const [clients, setClients] = useAtom(clientsAtom);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isMotorcycleModalOpen, setIsMotorcycleModalOpen] = useState(false);
   const [currentClient, setCurrentClient] = useState(null);
@@ -10,61 +20,26 @@ const Clients = () => {
   const [motorcycleFormData, setMotorcycleFormData] = useState({ make: '', model: '', plate: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'updated_at', direction: 'descending' });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null); // Store the user object
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          setError(error);
-        } else {
-          setUser(user);
-        }
-      } catch (err) {
-        setError(err);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
-    if (user) { // Only fetch clients after user is loaded
-      fetchClients();
-    }
-  }, [user, sortConfig]); // Depend on user and sortConfig
-
-  const fetchClients = async () => {
-    if (!user) return; // Don't fetch if user is not loaded
-
+  // Use useCallback to memoize loadClients, preventing unnecessary re-renders/re-fetches
+  const loadClients = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
-      const { data: clientsData, error: clientsError } = await supabase
-        .from('clients')
-        .select(`
-          id, name, contact, updated_at,
-          motorcycles (
-            id, make, model, plate, updated_at
-          )
-        `)
-        .eq('user_id', user.id) // Filter by user_id
-        .order(sortConfig.key, { ascending: sortConfig.direction === 'ascending', foreignTable: sortConfig.key === 'motorcycles.updated_at' ? 'motorcycles' : undefined });
-
-      if (clientsError) {
-        setError(clientsError);
-      } else {
-        setClients(clientsData || []);
-      }
+      const clientsData = await fetchClients(sortConfig);
+      setClients(clientsData);
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortConfig, setClients]); // Dependencies for useCallback
+
+  useEffect(() => {
+    // Fetch clients only on component mount and when sortConfig changes
+    loadClients();
+  }, [loadClients]); // Use memoized loadClients in useEffect dependency array
 
   const addClient = () => {
     setClientFormData({ name: '', contact: '' });
@@ -80,42 +55,33 @@ const Clients = () => {
 
   const handleClientSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return; // Don't proceed if user is not loaded
     if (!clientFormData.name || !clientFormData.contact) {
       alert('Por favor, completa todos los campos obligatorios del cliente.');
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
       if (currentClient) {
-        const { error: updateError } = await supabase
-          .from('clients')
-          .update({ name: clientFormData.name, contact: clientFormData.contact, updated_at: new Date() })
-          .eq('id', currentClient.id)
-          .eq('user_id', user.id); // Ensure user owns the client
-
-        if (updateError) {
-          setError(updateError);
-        }
+        await updateClient(currentClient.id, { name: clientFormData.name, contact: clientFormData.contact });
+        setClients(prevClients =>
+          prevClients.map(client =>
+            client.id === currentClient.id ? { ...client, ...clientFormData } : client
+          )
+        );
       } else {
-        const { error: insertError } = await supabase
-          .from('clients')
-          .insert([{ name: clientFormData.name, contact: clientFormData.contact, user_id: user.id }]); // Add user_id
-
-        if (insertError) {
-          setError(insertError);
-        }
+        await insertClient({ name: clientFormData.name, contact: clientFormData.contact });
+        setClients(prevClients => [...prevClients, { ...clientFormData, id: Date.now() }]);
       }
 
       setIsClientModalOpen(false);
       setClientFormData({ name: '', contact: '' });
-      fetchClients();
+      // Removed loadClients here to prevent refetch after modal submit
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
+      loadClients(); // Re-fetch clients after modal submit to get latest data from DB
     }
   };
 
@@ -134,108 +100,90 @@ const Clients = () => {
 
   const handleMotorcycleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return; // Don't proceed if user is not loaded
     if (!motorcycleFormData.make || !motorcycleFormData.model) {
       alert('Por favor, completa todos los campos obligatorios de la moto.');
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
       if (motorcycleFormData.id) {
-        const { error: updateError } = await supabase
-          .from('motorcycles')
-          .update({ make: motorcycleFormData.make, model: motorcycleFormData.model, plate: motorcycleFormData.plate, updated_at: new Date() })
-          .eq('id', motorcycleFormData.id)
-          .eq('user_id', user.id); // Ensure user owns the motorcycle
-
-        if (updateError) {
-          setError(updateError);
-        }
+        await updateMotorcycle(motorcycleFormData.id, {
+          make: motorcycleFormData.make,
+          model: motorcycleFormData.model,
+          plate: motorcycleFormData.plate,
+        });
+        setClients(prevClients =>
+          prevClients.map(client => {
+            if (client.id === currentClient.id) {
+              return {
+                ...client,
+                motorcycles: client.motorcycles.map(moto =>
+                  moto.id === motorcycleFormData.id ? { ...moto, ...motorcycleFormData } : moto
+                ),
+              };
+            }
+            return client;
+          })
+        );
       } else {
-        const { error: insertError } = await supabase
-          .from('motorcycles')
-          .insert([{
-            client_id: currentClient.id,
-            make: motorcycleFormData.make,
-            model: motorcycleFormData.model,
-            plate: motorcycleFormData.plate,
-            user_id: user.id, // Add user_id
-          }]);
-
-        if (insertError) {
-          setError(insertError);
-        }
+        await insertMotorcycle(currentClient.id, {
+          make: motorcycleFormData.make,
+          model: motorcycleFormData.model,
+          plate: motorcycleFormData.plate,
+        });
+        setClients(prevClients =>
+          prevClients.map(client => {
+            if (client.id === currentClient.id) {
+              return {
+                ...client,
+                motorcycles: [...client.motorcycles, { ...motorcycleFormData, id: Date.now() }],
+              };
+            }
+            return client;
+          })
+        );
       }
 
       setIsMotorcycleModalOpen(false);
       setMotorcycleFormData({ make: '', model: '', plate: '' });
-      fetchClients();
+      // Removed loadClients here to prevent refetch after modal submit
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
+      loadClients(); // Re-fetch clients after modal submit to get latest data from DB
     }
   };
 
   const deleteClient = async (clientId) => {
-    if (!user) return; // Don't proceed if user is not loaded
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-
-      // First, delete associated motorcycles
-      const { error: deleteMotorcyclesError } = await supabase
-        .from('motorcycles')
-        .delete()
-        .eq('client_id', clientId)
-        .eq('user_id', user.id); // Ensure user owns the motorcycles
-
-      if (deleteMotorcyclesError) {
-        setError(deleteMotorcyclesError);
-        return; // Stop if there's an error deleting motorcycles
-      }
-
-      // Then, delete the client
-      const { error: deleteClientError } = await supabase
-        .from('clients')
-        .delete()
-        .eq('id', clientId)
-        .eq('user_id', user.id); // Ensure user owns the client
-
-      if (deleteClientError) {
-        setError(deleteClientError);
-      } else {
-        setClients(clients.filter(client => client.id !== clientId));
-        fetchClients(); // Refetch after successful deletion
-      }
+      await deleteClientAndMotorcycles(clientId);
+      setClients(prevClients => prevClients.filter(client => client.id !== clientId));
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
+      loadClients(); // Re-fetch clients after delete to get latest data from DB
     }
   };
 
   const deleteMotorcycle = async (motorcycleId) => {
-    if (!user) return; // Don't proceed if user is not loaded
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      const { error: deleteError } = await supabase
-        .from('motorcycles')
-        .delete()
-        .eq('id', motorcycleId)
-        .eq('user_id', user.id); // Ensure user owns the motorcycle
-
-      if (deleteError) {
-        setError(deleteError);
-      }
-      fetchClients(); // Refetch after successful deletion
+      await deleteMotorcycle(motorcycleId);
+      setClients(prevClients =>
+        prevClients.map(client => ({
+          ...client,
+          motorcycles: client.motorcycles.filter(moto => moto.id !== motorcycleId),
+        }))
+      );
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
+      loadClients(); // Re-fetch clients after delete to get latest data from DB
     }
   };
 
@@ -249,17 +197,18 @@ const Clients = () => {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
+    // loadClients will be called automatically due to the useEffect dependency
   };
 
   const sortedAndFilteredClients = React.useMemo(() => {
-    if (!clients) return []; // Return empty array if clients is null/undefined
+    if (!clients) return [];
     let filteredClients = [...clients];
 
     if (searchTerm) {
       filteredClients = filteredClients.filter(client =>
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.motorcycles && client.motorcycles.some(moto => // Check if motorcycles exists
+        (client.motorcycles && client.motorcycles.some(moto =>
           moto.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
           moto.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (moto.plate && moto.plate.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -281,7 +230,6 @@ const Clients = () => {
         }
 
         if (isForeignTable && tableName === 'motorcycles') {
-          // Handle sorting by motorcycle fields (assuming you want to sort by the *first* motorcycle)
           const aValue = a.motorcycles && a.motorcycles.length > 0 ? a.motorcycles[0][fieldName] : '';
           const bValue = b.motorcycles && b.motorcycles.length > 0 ? b.motorcycles[0][fieldName] : '';
 
@@ -310,7 +258,8 @@ const Clients = () => {
   }, [clients, searchTerm, sortConfig]);
 
   if (loading) {
-    return <p className="text-light-text">Cargando clientes...</p>;
+    // Removed "Cargando clientes..." message
+    // return <p className="text-light-text">Cargando clientes...</p>;
   }
 
   if (error) {
