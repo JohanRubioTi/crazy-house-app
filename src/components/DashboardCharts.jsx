@@ -1,7 +1,13 @@
 import React from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { useAtom } from 'jotai';
+import { expensesAtom, servicesAtom, inventoryItemsAtom } from '../atoms';
 
-const DashboardCharts = ({ expenses, services, items }) => {
+const DashboardCharts = () => {
+    const [expenses] = useAtom(expensesAtom);
+    const [services] = useAtom(servicesAtom);
+    const [items] = useAtom(inventoryItemsAtom);
+
   // Process data for time-based charts (group by month)
   const processTimeData = () => {
     const monthMap = new Map();
@@ -36,7 +42,7 @@ const DashboardCharts = ({ expenses, services, items }) => {
         });
       }
 
-      const serviceRevenue = service.laborCost +
+      const serviceRevenue = service.labor_cost +
         service.productsUsed.reduce((acc, p) => acc + (p.quantity * p.price), 0);
 
       monthMap.get(monthKey).servicesRevenue += serviceRevenue;
@@ -44,7 +50,7 @@ const DashboardCharts = ({ expenses, services, items }) => {
 
     // Process inventory potential revenue
     items.forEach(item => {
-      const date = new Date(item.updatedAt);
+      const date = new Date(item.updated_at);
       const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
 
       if (!monthMap.has(monthKey)) {
@@ -55,7 +61,7 @@ const DashboardCharts = ({ expenses, services, items }) => {
           inventoryRevenue: 0
         });
       }
-      monthMap.get(monthKey).inventoryRevenue += item.quantity * item.priceSold;
+      monthMap.get(monthKey).inventoryRevenue += item.quantity * item.price_sold;
     });
 
     return Array.from(monthMap.values()).sort((a, b) =>
@@ -73,8 +79,8 @@ const DashboardCharts = ({ expenses, services, items }) => {
   // Process inventory data for value distribution
   const inventoryValueData = items.map(item => ({
     name: item.name,
-    value: item.quantity * item.priceSold, // Calculate total value for each item
-    fill: item.quantity < item.restockQuantity ? '#ff3c3c' : '#3cff99' // Keep color logic
+    value: item.quantity * item.price_sold, // Calculate total value for each item
+    fill: item.quantity < item.restock_quantity ? '#ff3c3c' : '#3cff99' // Keep color logic
   }));
 
 

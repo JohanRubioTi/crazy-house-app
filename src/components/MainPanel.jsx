@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatisticsPanel from './StatisticsPanel';
+import { useAtom } from 'jotai';
+import { inventoryItemsAtom, expensesAtom, servicesAtom } from '../atoms';
+import { insertExpense, updateExpense, deleteExpense } from '../supabaseService';
 
-const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUpdateExpenses, onLogout }) => {
-    const [expenses, setExpenses] = useState(propExpenses || []);
-    const [services, setServices] = useState(propServices || []);
+const MainPanel = ({ onLogout }) => {
+    const [expenses, setExpenses] = useAtom(expensesAtom);
+    const [services, setServices] = useAtom(servicesAtom);
+    const [items] = useAtom(inventoryItemsAtom);
+
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
     const [currentExpense, setCurrentExpense] = useState(null);
     const [expenseFormData, setExpenseFormData] = useState({
@@ -20,16 +25,6 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
     const [chartData, setChartData] = useState([]);
     const [chartView, setChartView] = useState('weekly');
     const expenseCategories = ['Repuestos', 'Combustible', 'Arriendo', 'Salarios', 'Marketing', 'Otros'];
-
-
-    useEffect(() => {
-        setExpenses(propExpenses || []);
-    }, [propExpenses]);
-
-    useEffect(() => {
-        setServices(propServices || []);
-    }, [propServices]);
-
 
     // Calculate total expenses and earnings based on chart data
     useEffect(() => {
@@ -56,11 +51,11 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
         const newAlerts = [];
         if (items) {
             items.forEach(item => {
-                if (item.quantity < item.restockQuantity) {
+                if (item.quantity < item.restock_quantity) {
                     newAlerts.push({
                         id: `stock-${item.id}`,
                         type: 'low-stock',
-                        message: `Stock bajo de ${item.name} (${item.quantity} ${item.unitType} restantes)`,
+                        message: `Stock bajo de ${item.name} (${item.quantity} ${item.unit_type} restantes)`,
                     });
                 }
             });
@@ -104,7 +99,7 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                 };
             }
             const productsValue = service.productsUsed.reduce((productAcc, product) => productAcc + (product.quantity * product.price), 0);
-            weeklyData[weekKey].ganancias += service.laborCost + productsValue;
+            weeklyData[weekKey].ganancias += service.labor_cost + productsValue;
         });
 
 
@@ -142,7 +137,7 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                 };
             }
             const productsValue = service.productsUsed.reduce((productAcc, product) => productAcc + (product.quantity * product.price), 0);
-            monthlyData[monthYear].ganancias += service.laborCost + productsValue;
+            monthlyData[monthYear].ganancias += service.labor_cost + productsValue;
         });
 
 
@@ -181,33 +176,36 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
     const editExpense = (expense) => {
         setExpenseFormData({
             ...expense,
-            date: new Date(expense.date).toISOString().split('T')[0],
+            date: new Date(expense.date).toISOString().split('T')[0], // Ensure date is in correct format
         });
         setCurrentExpense(expense);
         setIsExpenseModalOpen(true);
     };
 
-    const handleExpenseSubmit = (e) => {
+    const handleExpenseSubmit = async (e) => {
         e.preventDefault();
         if (!expenseFormData.description || expenseFormData.amount <= 0) {
             alert('Por favor, completa todos los campos obligatorios y asegúrate de que el monto sea válido.');
             return;
         }
 
-        const expenseDataToSave = {
-            ...expenseFormData,
-            date: new Date(expenseFormData.date).getTime(),
-        };
-
-        let updatedExpenses;
-        if (currentExpense) {
-            updatedExpenses = expenses.map(ex => ex.id === currentExpense.id ? { ...ex, ...expenseDataToSave } : ex);
-        } else {
-            updatedExpenses = [...expenses, { id: Date.now(), ...expenseDataToSave }];
+        try {
+            if (currentExpense) {
+                await updateExpense(currentExpense.id, expenseFormData);
+                // Optimistic Update
+                setExpenses(prevExpenses =>
+                    prevExpenses.map(ex => (ex.id === currentExpense.id ? { ...ex, ...expenseFormData, date: expenseFormData.date } : ex))
+                );
+            } else {
+                await insertExpense(expenseFormData);
+                // Optimistic Update
+                setExpenses(prevExpenses => [...prevExpenses, { ...expenseFormData, id: Date.now() }]); // Temporary ID
+            }
+        } catch (error) {
+            console.error("Failed to update/insert expense", error);
+            alert("Failed to update/insert expense: " + error.message);
         }
 
-        setExpenses(updatedExpenses);
-        onUpdateExpenses(updatedExpenses);
         setIsExpenseModalOpen(false);
         setExpenseFormData({
             description: '',
@@ -218,10 +216,15 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
         });
     };
 
-    const deleteExpense = (expenseId) => {
-        const updatedExpenses = expenses.filter(expense => expense.id !== expenseId);
-        setExpenses(updatedExpenses);
-        onUpdateExpenses(updatedExpenses);
+    const handleDeleteExpense = async (expenseId) => {
+        try {
+            await deleteExpense(expenseId);
+            // Optimistic Update
+            setExpenses(prevExpenses => prevExpenses.filter(expense => expense.id !== expenseId));
+        } catch (error) {
+            console.error("Failed to delete expense", error);
+            alert("Failed to delete expense: " + error.message);
+        }
     };
 
     const handleInputChange = (e) => {
@@ -253,7 +256,7 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                     <h2 className="text-lg font-semibold text-accent mb-3 font-graffiti">Alertas</h2>
                     <ul className="list-none pl-0">
                         {alerts.map(alert => (
-                            <li key={alert.id} className={`text-street-yellow mb-1 ${alert.type === 'low-stock' ? 'text-accent' : ''}`}>
+                            <li key={alert.id} className={`text-street-yellow mb-1 ${alert.type === 'low-stock' ? 'text-accent' : 'text-secondary'}`}>
                                 {alert.message}
                             </li>
                         ))}
@@ -323,10 +326,10 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
                             {items && items.map(item => (
                                 <tr key={item.id} className="text-secondary-text hover:bg-dark-bg transition-colors duration-200">
                                     <td className="px-4 py-3 text-street-yellow font-sans">{item.name}</td>
-                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.quantity} {item.unitType}</td>
-                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.restockQuantity} {item.unitType}</td>
+                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.quantity} {item.unit_type}</td>
+                                    <td className="px-4 py-3 text-street-yellow font-sans">{item.restock_quantity} {item.unit_type}</td>
                                     <td className="px-4 py-3 text-street-yellow font-sans">
-                                        {item.quantity < item.restockQuantity ? (
+                                        {item.quantity < item.restock_quantity ? (
                                             <span className="text-accent font-semibold font-sans">Bajo Stock</span>
                                         ) : (
                                             <span className="text-secondary font-semibold font-sans">En Stock</span>
@@ -341,10 +344,7 @@ const MainPanel = ({ items, expenses: propExpenses, services: propServices, onUp
 
 
             {/* Statistical Analysis */}
-            <StatisticsPanel items={items} expenses={expenses} services={services} />
-
-            {/* Expenses Table - Consider moving to a separate component if MainPanel gets too long */}
-            {/* ... (rest of the component remains unchanged) */}
+            <StatisticsPanel />
 
             {/* Expense Modal */}
             {isExpenseModalOpen && (

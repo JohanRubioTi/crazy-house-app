@@ -6,6 +6,13 @@ import Inventory from './components/Inventory';
 import ServiceHistory from './components/ServiceHistory';
 import './App.css';
 import { supabase } from './supabaseClient';
+import { useAtom } from 'jotai';
+import { clientsAtom, inventoryItemsAtom, servicesAtom, motorcyclesAtom, expensesAtom } from './atoms';
+import { fetchClients } from './supabaseService';
+import { fetchInventory } from './supabaseService';
+import { fetchServices } from './supabaseService';
+import { fetchExpenses } from './supabaseService';
+
 
 function App() {
   const location = useLocation();
@@ -13,8 +20,15 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // New state for password confirmation
-  const [isSignUp, setIsSignUp] = useState(false); // State to toggle between Login and Register forms
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  // Jotai atoms
+  const [, setClients] = useAtom(clientsAtom);
+  const [, setInventoryItems] = useAtom(inventoryItemsAtom);
+  const [, setServices] = useAtom(servicesAtom);
+  const [, setExpenses] = useAtom(expensesAtom);
+  //const [, setMotorcycles] = useAtom(motorcyclesAtom); // Add if needed
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -27,57 +41,36 @@ function App() {
     })
   }, [])
 
-  // Centralized Data (Simulating a Database)
-  const [inventoryItems, setInventoryItems] = React.useState([
-    { id: 1, name: 'Aceite 2T', quantity: 50, priceBought: 25000, priceSold: 35000, unitType: 'unidad', restockQuantity: 10, updatedAt: Date.now() },
-    { id: 2, name: 'Filtro de aire', quantity: 20, priceBought: 10000, priceSold: 15000, unitType: 'unidad', restockQuantity: 5, updatedAt: Date.now() - 86400000 },
-    { id: 3, name: 'Líquido de frenos', quantity: 30, priceBought: 12000, priceSold: 18000, unitType: 'litro', restockQuantity: 8, updatedAt: Date.now() - 172800000 },
-  ]);
+    // Preload data on app load
+    useEffect(() => {
+        const preloadData = async () => {
+            if (session) { // Only fetch if user is logged in
+                try {
+                    setLoading(true);
+                    const clientsData = await fetchClients({ key: 'updated_at', direction: 'descending' });
+                    setClients(clientsData);
 
-  const [expenses, setExpenses] = React.useState([
-    { id: 1, description: 'Compra de repuestos', amount: 50000, date: Date.now() - 259200000, category: 'Repuestos', itemId: 1 }, // 3 days ago
-    { id: 2, description: 'Gasolina', amount: 20000, date: Date.now() - 86400000, category: 'Combustible', itemId: null }, // 1 day ago
-    { id: 3, description: "Pago arriendo", amount: 150000, date: Date.now(), category: 'Arriendo', itemId: null }
-  ]);
+                    const inventoryData = await fetchInventory({ key: 'updated_at', direction: 'descending' });
+                    setInventoryItems(inventoryData);
 
-  const [services, setServices] = React.useState([
-    {
-      id: 1,
-      clientId: 1,
-      motorcycleId: 1,
-      date: Date.now() - 432000000, // 5 days ago
-      laborCost: 60000,
-      productsUsed: [{ productId: 1, quantity: 2, price: 35000 }],
-      notes: 'Service mayor inicial',
-      serviceType: 'Mayor',
-      kilometers: 15000,
-    },
-    {
-      id: 2,
-      clientId: 2,
-      motorcycleId: 2,
-      date: Date.now() - 86400000, // 1 day ago
-      laborCost: 35000,
-      productsUsed: [{ productId: 2, quantity: 1, price: 15000 }],
-      notes: 'Revision de frenos y filtro de aire',
-      serviceType: 'Frenos',
-      kilometers: 18700,
-    },
-  ]);
+                    const servicesData = await fetchServices({ key: 'date', direction: 'descending' });
+                    setServices(servicesData);
 
+                    const expensesData = await fetchExpenses({ key: 'date', direction: 'descending' });
+                    setExpenses(expensesData);
 
-    // Callback function to update inventory items in App's state
-    const handleInventoryUpdate = (updatedItems) => {
-      setInventoryItems(updatedItems);
-    };
+                } catch (error) {
+                    console.error("Error preloading data:", error);
+                    // Handle error appropriately (e.g., show error message to user)
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
 
-    const handleExpenseUpdate = (updatedExpenses) => {
-        setExpenses(updatedExpenses);
-    };
+        preloadData();
+    }, [session, setClients, setInventoryItems, setServices, setExpenses]); // Fetch data when session changes
 
-    const handleServiceUpdate = (updatedServices) => {
-        setServices(updatedServices);
-    };
 
   async function handleSignUp() {
     setLoading(true)
@@ -137,7 +130,7 @@ function App() {
         <div className="card bg-transparent-black bg-opacity-70 backdrop-blur-sm p-6 rounded-lg shadow-md-dark border border-gray-700 w-full max-w-sm">
           <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti text-center">{isSignUp ? 'Regístrate' : 'Iniciar Sesión'}</h1>
           {isSignUp ? (
-            <div> {/* Register Form */}
+            <div>
               <input
                 className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-2"
                 type="email"
@@ -166,7 +159,7 @@ function App() {
                 ¿Ya tienes una cuenta? Iniciar Sesión
               </button>
             </div>
-          ) : ( // Login Form
+          ) : (
             <div>
               <input
                 className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans mb-2"
@@ -198,10 +191,10 @@ function App() {
       <div className="app-container">
         <div className="content">
           <Routes>
-            <Route path="/" element={<MainPanel items={inventoryItems} expenses={expenses} services={services} onUpdateExpenses={handleExpenseUpdate} onLogout={handleLogout} />} />
+            <Route path="/" element={<MainPanel onLogout={handleLogout} />} />
             <Route path="/clients" element={<Clients />} />
-            <Route path="/inventory" element={<Inventory onUpdateItems={handleInventoryUpdate} items={inventoryItems} />} />
-            <Route path="/service-history" element={<ServiceHistory services={services} onUpdateServices={handleServiceUpdate} />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/service-history" element={<ServiceHistory />} />
           </Routes>
         </div>
         <nav className="bottom-nav">

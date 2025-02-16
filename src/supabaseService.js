@@ -2,7 +2,6 @@
 import { supabase } from './supabaseClient';
 
 // --- Inventory Functions (Existing) ---
-// ... (All the existing inventory functions from the previous response) ...
 export const fetchInventory = async (sortConfig) => {
   try {
     const user = await supabase.auth.getUser();
@@ -296,4 +295,142 @@ export const deleteMotorcycle = async (motorcycleId) => {
     alert('Error deleting motorcycle: ' + error.message);
     throw error;
   }
+};
+
+// --- Expense Functions ---
+
+export const fetchExpenses = async (sortConfig = { key: 'date', direction: 'descending' }) => {
+  try {
+    const user = await supabase.auth.getUser();
+    if (!user || !user.data || !user.data.user) {
+      throw new Error("User not authenticated");
+    }
+    const userId = user.data.user.id;
+
+    let { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('user_id', userId)
+      .order(sortConfig.key, { ascending: sortConfig.direction === 'ascending' });
+
+    if (error) throw error;
+    // Convert date to ISO string for consistency
+    return (data || []).map(expense => ({...expense, date: new Date(expense.date).toISOString().split('T')[0]}));
+  } catch (error) {
+    console.error('Error fetching expenses:', error);
+    alert('Error fetching expenses: ' + error.message);
+    return [];
+  }
+};
+
+export const updateExpense = async (expenseId, expenseData) => {
+  try {
+    const user = await supabase.auth.getUser();
+    if (!user || !user.data || !user.data.user) {
+      throw new Error("User not authenticated");
+    }
+    const userId = user.data.user.id;
+    const { error } = await supabase
+      .from('expenses')
+      .update({...expenseData, date: new Date(expenseData.date).getTime(), updated_at: new Date()})
+      .eq('id', expenseId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating expense:', error);
+    alert('Error updating expense: ' + error.message);
+    throw error;
+  }
+};
+
+export const insertExpense = async (expenseData) => {
+  try {
+    const user = await supabase.auth.getUser();
+    if (!user || !user.data || !user.data.user) {
+      throw new Error("User not authenticated");
+    }
+    const userId = user.data.user.id;
+
+    const { error } = await supabase
+      .from('expenses')
+      .insert([{ ...expenseData, user_id: userId, date: new Date(expenseData.date).getTime() }]);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error inserting expense:', error);
+    alert('Error inserting expense: ' + error.message);
+    throw error;
+  }
+};
+
+export const deleteExpense = async (expenseId) => {
+  try {
+      const user = await supabase.auth.getUser();
+      if (!user || !user.data || !user.data.user) {
+          throw new Error("User not authenticated");
+      }
+      const userId = user.data.user.id;
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', expenseId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting expense:', error);
+    alert('Error deleting expense: ' + error.message);
+    throw error;
+  }
+};
+
+// --- Service Functions ---
+export const fetchServices = async (sortConfig = { key: 'date', direction: 'descending' }) => {
+    try {
+        const user = await supabase.auth.getUser();
+        if (!user || !user.data || !user.data.user) {
+            throw new Error("User not authenticated");
+        }
+        const userId = user.data.user.id;
+
+        // Fetch Services
+        let { data: servicesData, error: servicesError } = await supabase
+            .from('services')
+            .select('*')
+            .eq('user_id', userId)
+            .order(sortConfig.key, { ascending: sortConfig.direction === 'ascending' });
+        if (servicesError) throw servicesError;
+
+        // Fetch Service Products for each service
+        if (servicesData) {
+            const servicesWithProducts = await Promise.all(
+                servicesData.map(async (service) => {
+                    let { data: serviceProductsData, error: serviceProductsError } = await supabase
+                        .from('service_products')
+                        .select('*, inventory_items(name)')
+                        .eq('service_id', service.id)
+                        .eq('user_id', userId);
+
+                    if (serviceProductsError) throw serviceProductsError;
+
+                    const productsUsed = serviceProductsData.map((sp) => ({
+                        productId: sp.inventory_item_id,
+                        quantity: sp.quantity,
+                        price: sp.price,
+                        name: sp.inventory_items.name,
+                    }));
+
+                    return { ...service, productsUsed, date: new Date(service.date).toISOString().split('T')[0] };
+                })
+            );
+            return servicesWithProducts;
+        }
+        return [];
+
+    } catch (error) {
+        console.error('Error fetching services:', error);
+        alert('Error fetching services: ' + error.message);
+        return [];
+    }
 };
