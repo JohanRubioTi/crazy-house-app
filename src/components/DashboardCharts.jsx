@@ -80,88 +80,92 @@ const DashboardCharts = () => {
   const inventoryValueData = items.map(item => ({
     name: item.name,
     value: item.quantity * item.price_sold, // Calculate total value for each item
-    fill: item.quantity < item.restock_quantity ? '#ff3c3c' : '#3cff99' // Keep color logic
+    fill: item.quantity < item.restock_quantity ? '#FCA5A5' : '#86EFAC' // Premium error and success colors
   }));
 
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
       {/* Revenue/Expenses Line Chart */}
-      <div className="bg-dark-bg p-4 rounded-lg h-64">
-        <h3 className="text-light-text mb-2">Tendencias Financieras</h3>
+      <div className="bg-dark-secondary p-4 rounded-xl h-64 shadow-premium-md border border-accent-premium">
+        <h3 className="text-light-primary mb-2 font-display text-xl font-semibold">Tendencias Financieras</h3>
         <ResponsiveContainer width="100%" height="90%">
           <LineChart data={processTimeData()}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="month" stroke="#f0f0f0" />
-            <YAxis stroke="#f0f0f0" stroke="#f0f0f0"/>
+            <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
+            <XAxis dataKey="month" stroke="#CBD5E0" tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
+            <YAxis stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
             <Tooltip
-              contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
+              contentStyle={{ backgroundColor: '#334155', border: 'none', fontFamily: 'Lato' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}
             />
-            <Legend wrapperStyle={{ color: '#f0f0f0' }}/>
+            <Legend wrapperStyle={{ color: '#CBD5E0', fontFamily: 'Lato', fontSize: '0.9rem' }}/>
             <Line
               type="monotone"
               dataKey="servicesRevenue"
               name="Ingresos Servicios"
-              stroke="#3cff99"
+              stroke="#86EFAC" // Premium success color
               strokeWidth={2}
+              activeDot={{ r: 6 }}
             />
             <Line
               type="monotone"
               dataKey="inventoryRevenue"
               name="Inventario Potencial"
-              stroke="#f5a623"
+              stroke="#highlight-premium" // Highlight premium color
               strokeWidth={2}
+              activeDot={{ r: 6 }}
             />
             <Line
               type="monotone"
               dataKey="expenses"
               name="Gastos"
-              stroke="#ff3c3c"
+              stroke="#FCA5A5" // Premium error color
               strokeWidth={2}
+              activeDot={{ r: 6 }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* Expense Categories Bar Chart */}
-      <div className="bg-dark-bg p-4 rounded-lg h-64">
-        <h3 className="text-light-text mb-2">Distribución de Gastos</h3>
+      <div className="bg-dark-secondary p-4 rounded-xl h-64 shadow-premium-md border border-accent-premium">
+        <h3 className="text-light-primary mb-2 font-display text-xl font-semibold">Distribución de Gastos</h3>
         <ResponsiveContainer width="100%" height="90%">
           <BarChart data={Object.entries(expenseCategories).map(([name, value]) => ({ name, value }))}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="name" stroke="#f0f0f0" />
-            <YAxis stroke="#f0f0f0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
+            <XAxis dataKey="name" stroke="#CBD5E0" tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
+            <YAxis stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
             <Tooltip
-              contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
+              contentStyle={{ backgroundColor: '#334155', border: 'none', fontFamily: 'Lato' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}
             />
             <Bar
               dataKey="value"
-              fill="#ff3c3c"
+              fill="#FCA5A5" // Premium error color
               name="Gastos por Categoría"
+              barSize={20}
             />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Inventory Value Distribution Bar Chart */}
-      <div className="bg-dark-bg p-4 rounded-lg h-64">
-        <h3 className="text-light-text mb-2">Valor de Inventario por Producto</h3>
+      <div className="bg-dark-secondary p-4 rounded-xl h-64 shadow-premium-md border border-accent-premium">
+        <h3 className="text-light-primary mb-2 font-display text-xl font-semibold">Valor de Inventario por Producto</h3>
         <ResponsiveContainer width="100%" height="90%">
           <BarChart data={inventoryValueData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="name" stroke="#f0f0f0" />
-            <YAxis stroke="#f0f0f0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
+            <XAxis dataKey="name" stroke="#CBD5E0" tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
+            <YAxis stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
             <Tooltip
-              contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
+              contentStyle={{ backgroundColor: '#334155', border: 'none', fontFamily: 'Lato' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}
             />
             <Bar
               dataKey="value"
               name="Valor Inventario"
               barSize={20}
-              label={{ position: 'top', formatter: (value) => `$${(value/1000).toFixed(0)}k` }}
+              label={{ position: 'top', formatter: (value) => `$${(value/1000).toFixed(0)}k`, fill: '#CBD5E0', fontFamily: 'Lato', fontSize: '0.8rem' }}
             >
               {inventoryValueData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />

@@ -188,7 +188,7 @@ function App() {
     );
   } else {
     return (
-      <div className="app-container">
+      <div> {/* Removed app-container class here */}
         <div className="content">
           <Routes>
             <Route path="/" element={<MainPanel onLogout={handleLogout} />} />
