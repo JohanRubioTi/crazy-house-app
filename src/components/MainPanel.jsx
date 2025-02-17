@@ -244,7 +244,7 @@ const MainPanel = ({ onLogout }) => {
 
     return (
         <div className="main-panel p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
-            <div className="flex justify-between items-center mb-4"> {/* Adjusted mb and flex container */}
+            <div className="flex justify-between items-center mb-6"> {/* Adjusted mb and flex container */}
                 <h1 className="text-3xl font-display text-light-primary tracking-wide">Panel de Administración</h1>
                 <button onClick={onLogout} className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
                     Cerrar Sesión
@@ -278,8 +278,8 @@ const MainPanel = ({ onLogout }) => {
                     </button>
                 </div>
 
-                {/* Quick Actions Panel - Conditionally rendered based on alerts */}
-                <div className="bg-dark-secondary p-5 rounded-xl shadow-premium-md border border-accent-premium">
+                {/* Quick Actions Panel - Always show, adjust layout with alerts */}
+                <div className={`bg-dark-secondary p-5 rounded-xl shadow-premium-md border border-accent-premium ${alerts.length > 0 ? '' : 'md:col-start-2'}`}> {/* Adjust col-start if no alerts */}
                     <QuickActionsPanel />
                 </div>
             </div>

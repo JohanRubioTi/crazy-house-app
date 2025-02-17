@@ -7,16 +7,22 @@
 
   .content {
     flex: 1;
-    padding: 20px;
+    padding: 0; /* Resetting padding to 0 to remove outer space */
     overflow-y: auto; /* Make content scrollable */
+    padding-bottom: 70px; /* Add padding to content to avoid overlap with fixed navbar */
   }
 
 .bottom-nav {
+  position: fixed; /* Fixed position to stay at the bottom */
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
-  justify-content: space-around;
-  background-color: #1F2937; /* Darker navigation background - consistent with premium theme */
-  padding: 10px 0;
-  border-top: 2px solid #4B5563; /* Accent border top - consistent with premium theme */
+  justify-content: space-evenly; /* Changed to space-evenly for wider button areas */
+  background-color: rgba(31, 41, 55, 0.8); /* Darker navigation background with transparency */
+  backdrop-filter: blur(10px); /* Apply blur to background */
+  padding: 5px 0; /* Reduced vertical padding to make navbar less tall */
+  border-top: 1px solid #4B5563; /* Accent border top - consistent with premium theme */
 }
 
 .nav-link {
@@ -25,27 +31,42 @@
     align-items: center;
     color: #E5E7EB; /* Light text color - consistent with premium theme */
     text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 0.5rem; /* Rounded corners - consistent with premium theme */
-    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+    padding: 10px 20px; /* Adjusted horizontal padding to make buttons wider */
+    border-radius: 0.75rem; /* More rounded corners - consistent with premium theme */
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease-in-out; /* Smooth transition with transform */
+    font-size: 1rem; /* Increased font size for labels */
+    width: 100%; /* Ensure nav-links take equal width */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
   .nav-link.active {
     color: #86EFAC; /* Success color for active link - consistent with premium theme */
+    transform: scale(1.05); /* Slight scale up on active - reduced scale */
   }
 
   .nav-link:hover {
-    background-color: #374151; /* Hover background - consistent with premium theme */
+    background-color: rgba(55, 65, 81, 0.7); /* Hover background - consistent with premium theme, slightly transparent */
     color: #CBD5E0; /* Lighter text on hover */
+    transform: translateY(-1px); /* Slight lift on hover - reduced lift */
   }
 
 .nav-icon {
-  font-size: 1.5em;
-  margin-bottom: 5px;
+  font-size: 1.6em; /* Slightly reduced icon size */
+  margin-bottom: 6px; /* Reduced margin */
+  opacity: 0.8; /* Slightly faded icons */
+  transition: opacity 0.3s ease;
 }
 
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+    opacity: 1; /* Full opacity on hover and active */
+}
+
+
 .nav-label {
-  font-size: 0.8em;
+  font-size: 0.85rem; /* Slightly smaller and more premium label text */
+  font-weight: 500; /* Medium font weight for labels */
+  letter-spacing: 0.01em; /* Slight letter spacing for better readability */
 }
 
 /* Responsive adjustments */
@@ -54,11 +75,17 @@
     padding: 5px 0; /* Reduce padding on smaller screens */
   }
 
+  .nav-link {
+    padding: 8px 15px; /* Adjusted padding for smaller screens */
+    font-size: 0.9rem; /* Adjusted font size for smaller screens */
+  }
+
   .nav-icon {
-    font-size: 1.2em; /* Slightly smaller icons */
+    font-size: 1.3em; /* Slightly smaller icons on smaller screens */
+    margin-bottom: 5px; /* Adjusted margin on smaller screens */
   }
 
   .nav-label {
-    font-size: 0.7em; /* Slightly smaller text */
+    font-size: 0.75rem; /* Slightly smaller text on smaller screens */
   }
 }
