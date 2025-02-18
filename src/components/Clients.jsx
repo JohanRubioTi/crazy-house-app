@@ -10,6 +10,7 @@ import {
   insertMotorcycle,
   deleteMotorcycle
 } from '../supabaseService';
+import ConfirmationModal from './ConfirmationModal'; // Import confirmation modal
 
 const Clients = () => {
   const [clients, setClients] = useAtom(clientsAtom);
@@ -22,13 +23,22 @@ const Clients = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'updated_at', direction: 'descending' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [expandedClientId, setExpandedClientId] = useState(null); // State for expanded client
+  const [deleteConfirmation, setDeleteConfirmation] = useState({ // Confirmation modal state
+    isOpen: false,
+    itemId: null,
+    itemType: null, // 'client' or 'motorcycle'
+  });
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false); // Track initial load
+
 
   // Use useCallback to memoize loadClients, preventing unnecessary re-renders/re-fetches
   const loadClients = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); // Set loading to true only when fetch is triggered
     try {
       const clientsData = await fetchClients(sortConfig);
       setClients(clientsData);
+      setHasLoadedOnce(true); // Mark initial load as complete
     } catch (err) {
       setError(err);
     } finally {
@@ -38,8 +48,14 @@ const Clients = () => {
 
   useEffect(() => {
     // Fetch clients only on component mount and when sortConfig changes
-    loadClients();
-  }, [loadClients]); // Use memoized loadClients in useEffect dependency array
+    // Check if data is already loaded to avoid redundant loading message
+    if (!hasLoadedOnce && clients.length === 0) {
+      loadClients();
+    } else if (!hasLoadedOnce && clients.length > 0) {
+      setHasLoadedOnce(true); // If data is in atom on mount, consider loaded
+    }
+  }, [loadClients, hasLoadedOnce, clients.length]); // Use memoized loadClients in useEffect dependency array
+
 
   const addClient = () => {
     setClientFormData({ name: '', contact: '' });
@@ -156,7 +172,27 @@ const Clients = () => {
     }
   };
 
-  const deleteClient = async (clientId) => {
+  const confirmDeleteClient = (clientId) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      itemId: clientId,
+      itemType: 'client',
+    });
+  };
+
+  const confirmDeleteMotorcycle = (motorcycleId) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      itemId: motorcycleId,
+      itemType: 'motorcycle',
+    });
+  };
+
+
+  const deleteClient = async () => {
+    const clientId = deleteConfirmation.itemId;
+    setDeleteConfirmation({ ...deleteConfirmation, isOpen: false }); // Close confirmation modal
+
     setLoading(true);
     try {
       await deleteClientAndMotorcycles(clientId);
@@ -167,9 +203,12 @@ const Clients = () => {
       setLoading(false);
       loadClients(); // Re-fetch clients after delete to get latest data from DB
     }
+
   };
 
-  const deleteMotorcycle = async (motorcycleId) => {
+  const deleteMotorcycle = async () => {
+    const motorcycleId = deleteConfirmation.itemId;
+    setDeleteConfirmation({ ...deleteConfirmation, isOpen: false }); // Close confirmation modal
     setLoading(true);
     try {
       await deleteMotorcycle(motorcycleId);
@@ -187,6 +226,11 @@ const Clients = () => {
     }
   };
 
+  const handleCancelDelete = () => {
+    setDeleteConfirmation({ ...deleteConfirmation, isOpen: false }); // Close confirmation modal
+  };
+
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -199,6 +243,11 @@ const Clients = () => {
     setSortConfig({ key, direction });
     // loadClients will be called automatically due to the useEffect dependency
   };
+
+    const toggleClientExpansion = (clientId) => {
+        setExpandedClientId(expandedClientId === clientId ? null : clientId);
+    };
+
 
   const sortedAndFilteredClients = React.useMemo(() => {
     if (!clients) return [];
@@ -258,8 +307,7 @@ const Clients = () => {
   }, [clients, searchTerm, sortConfig]);
 
   if (loading) {
-    // Removed "Cargando clientes..." message
-    // return <p className="text-light-text">Cargando clientes...</p>;
+    return <div className="text-center"><div className="spinner mb-4"></div></div>; // Removed "Cargando Clientes..." text
   }
 
   if (error) {
@@ -267,90 +315,124 @@ const Clients = () => {
   }
 
   return (
-    <div className="clients p-4 bg-street-gradient">
-      <h1 className="text-2xl font-bold text-primary mb-4 font-graffiti">Clientes</h1>
+    <div className="clients p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
+      <h1 className="text-3xl font-display text-light-primary mb-6 tracking-wide">Clientes</h1>
 
-      <input
-        type="text"
-        placeholder="Buscar..."
-        value={searchTerm}
-        onChange={handleSearchChange}
-        className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 mb-4 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans"
-      />
-
-      <div className="mb-4">
-        <button onClick={() => requestSort('name')} className="mr-2 bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
-          Ordenar por Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-        </button>
-        <button onClick={() => requestSort('updated_at')} className="bg-accent hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full font-sans">
-          Ordenar por Reciente {sortConfig.key === 'updated_at' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
-        </button>
+      <div className="mb-4 flex flex-wrap gap-2 justify-between items-center">
+        <div className="flex flex-grow gap-2">
+          <input
+            type="text"
+            placeholder="Buscar clientes..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
+          />
+          <button onClick={addClient} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
+            Agregar Cliente
+          </button>
+        </div>
       </div>
 
-      <button onClick={addClient} className="bg-secondary hover:bg-light-accent text-dark-bg font-bold py-2 px-4 rounded-full mb-4 font-sans">Agregar Cliente</button>
-
-      <ul>
-        {sortedAndFilteredClients.map(client => (
-          <li key={client.id} className="mb-6 border-b border-gray-700 pb-4 bg-transparent-black bg-opacity-70 backdrop-blur-sm p-5 rounded-lg shadow-md-dark border border-gray-700">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-xl text-light-text font-sans">{client.name}</h2>
-                <p className="text-gray-400 font-sans">{client.contact}</p>
-              </div>
-              <div>
-                <button onClick={() => editClient(client)} className="bg-secondary hover:bg-light-accent text-dark-bg px-3 py-1 rounded-full mr-2 font-sans">Editar</button>
-                <button onClick={() => deleteClient(client.id)} className="bg-primary hover:bg-light-accent text-light-text px-3 py-1 rounded-full mr-2 font-sans">Eliminar</button>
-                <button onClick={() => addMotorcycle(client.id)} className="bg-secondary hover:bg-light-accent text-dark-bg px-3 py-1 rounded-full font-sans">Agregar Moto</button>
-              </div>
+      {/* Expanded Client Motorcycles Section - Displayed above table when expanded */}
+      {expandedClientId && (
+        <div className="mb-6 bg-dark-secondary p-6 rounded-lg shadow-premium-md border border-accent-premium">
+          <h3 className="text-xl font-semibold text-light-primary font-display mb-4">Motos del Cliente</h3>
+          {clients.find(c => c.id === expandedClientId)?.motorcycles && clients.find(c => c.id === expandedClientId)?.motorcycles.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clients.find(c => c.id === expandedClientId).motorcycles.map(motorcycle => (
+                <div key={motorcycle.id} className="bg-dark-primary p-4 rounded-lg shadow-md border border-gray-700">
+                  <p className="text-light-text font-body"><span className="font-semibold">Marca:</span> {motorcycle.make}</p>
+                  <p className="text-light-text font-body"><span className="font-semibold">Modelo:</span> {motorcycle.model}</p>
+                  <p className="text-light-text font-body"><span className="font-semibold">Placa:</span> {motorcycle.plate || 'N/A'}</p>
+                  <div className="mt-2 flex justify-end gap-2">
+                    <button onClick={() => editMotorcycle(clients.find(c => c.id === expandedClientId), motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar Moto</button>
+                    <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar Moto</button>
+                  </div>
+                </div>
+              ))}
             </div>
-            {client.motorcycles && client.motorcycles.length > 0 && (
-              <ul className="mt-2">
-                {client.motorcycles.map(motorcycle => (
-                  <li key={motorcycle.id} className="flex justify-between items-center mt-2">
-                    <div className="font-sans">{motorcycle.make} {motorcycle.model} {motorcycle.plate && `(${motorcycle.plate})`}</div>
-                    <div>
-                      <button onClick={() => editMotorcycle(client, motorcycle)} className="bg-secondary hover:bg-light-accent text-dark-bg px-2 py-1 rounded-full mr-2 text-xs font-sans">Editar</button>
-                      <button onClick={() => deleteMotorcycle(motorcycle.id)} className="bg-primary hover:bg-light-accent text-light-text px-2 py-1 rounded-full text-xs font-sans">Eliminar</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
+          ) : (
+            <p className="text-light-primary font-body">No hay motos registradas para este cliente.</p>
+          )}
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0">
+          <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
+            <tr className="rounded-t-lg">
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
+                <button onClick={() => requestSort('name')} className="hover:text-highlight-premium focus:outline-none">
+                  Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                </button>
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
+                <button onClick={() => requestSort('contact')} className="hover:text-highlight-premium focus:outline-none">
+                  Teléfono {sortConfig.key === 'contact' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                </button>
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
+                <button onClick={() => requestSort('updated_at')} className="hover:text-highlight-premium focus:outline-none">
+                  Reciente {sortConfig.key === 'updated_at' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                </button>
+              </th>
+              <th scope="col" className="px-4 py-3 text-right text-sm font-semibold border-b border-accent-premium rounded-tr-lg">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="bg-dark-secondary font-body text-light-primary">
+            {sortedAndFilteredClients.map(client => (
+              <tr key={client.id} className="group hover:bg-dark-primary transition-colors duration-200">
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{client.name}</td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{client.contact}</td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{new Date(client.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium text-right">
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => editClient(client)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
+                    <button onClick={() => confirmDeleteClient(client.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
+                    <button onClick={() => addMotorcycle(client.id)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Añadir Moto</button>
+                    <button
+                      onClick={() => toggleClientExpansion(client.id)}
+                      className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs"
+                    >
+                      {expandedClientId === client.id ? 'Colapsar' : 'Expandir'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="bg-dark-secondary">
+            <tr>
+              <td colSpan="4" className="px-4 py-3 rounded-b-lg">
+                {sortedAndFilteredClients.length === 0 && <p className="text-light-primary text-center font-body">No hay clientes que mostrar.</p>}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
 
       {/* Client Modal */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm">
-          <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md border border-accent">
-            <h2 className="text-xl font-bold text-primary mb-4 font-graffiti">{currentClient ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
-            <form onSubmit={handleClientSubmit}>
-              <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="name">Nombre:</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={clientFormData.name}
-                  onChange={(e) => setClientFormData({ ...clientFormData, name: e.target.value })}
-                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
-                  required
-                />
+        <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center backdrop-blur-sm">
+          <div className="bg-dark-secondary bg-opacity-90 backdrop-blur-md rounded-xl p-8 w-full max-w-md shadow-lg border border-accent-premium">
+            <h2 className="text-2xl font-semibold text-light-primary mb-6 font-display">{currentClient ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
+            <form onSubmit={handleClientSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="name" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Nombre</label>
+                <input type="text" id="name" name="name" value={clientFormData.name} onChange={e => setClientFormData({...clientFormData, name: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body"/>
               </div>
-              <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="contact">Teléfono:</label>
-                <input
-                  type="text"
-                  id="contact"
-                  value={clientFormData.contact}
-                  onChange={(e) => setClientFormData({ ...clientFormData, contact: e.target.value })}
-                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
-                  required
-                />
+              <div>
+                <label htmlFor="contact" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Teléfono</label>
+                <input type="text" id="contact" name="contact" value={clientFormData.contact} onChange={e => setClientFormData({...clientFormData, contact: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body"/>
               </div>
-              <div className="flex justify-end">
-                <button type="submit" className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mr-2 font-sans">Guardar</button>
-                <button type="button" onClick={() => setIsClientModalOpen(false)} className="bg-accent hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full font-sans">Cancelar</button>
+              <div className="flex justify-between mt-6">
+                <button type="submit" className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
+                  Guardar
+                </button>
+                <button type="button" onClick={() => setIsClientModalOpen(false)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
+                  Cancelar
+                </button>
               </div>
             </form>
           </div>
@@ -359,50 +441,39 @@ const Clients = () => {
 
       {/* Motorcycle Modal */}
       {isMotorcycleModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm">
-          <div className="bg-transparent-black bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-md border border-accent">
-            <h2 className="text-xl font-bold text-primary mb-4 font-graffiti">{motorcycleFormData.id ? 'Editar Moto' : 'Agregar Moto'}</h2>
-            <form onSubmit={handleMotorcycleSubmit}>
-              <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="make">Marca:</label>
-                <input
-                  type="text"
-                  id="make"
-                  value={motorcycleFormData.make}
-                  onChange={(e) => setMotorcycleFormData({ ...motorcycleFormData, make: e.target.value })}
-                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
-                  required
-                />
+        <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center backdrop-blur-sm">
+          <div className="bg-dark-secondary bg-opacity-90 backdrop-blur-md rounded-xl p-8 w-full max-w-md shadow-lg border border-accent-premium">
+            <h2 className="text-2xl font-semibold text-light-primary mb-6 font-display">{motorcycleFormData.id ? 'Editar Moto' : 'Agregar Moto'}</h2>
+            <form onSubmit={handleMotorcycleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="make" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Marca</label>
+                <input type="text" id="make" name="make" value={motorcycleFormData.make} onChange={e => setMotorcycleFormData({...motorcycleFormData, make: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body" required />
               </div>
-              <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="model">Modelo:</label>
-                <input
-                  type="text"
-                  id="model"
-                  value={motorcycleFormData.model}
-                  onChange={(e) => setMotorcycleFormData({ ...motorcycleFormData, model: e.target.value })}
-                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
-                  required
-                />
+              <div>
+                <label htmlFor="model" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Modelo</label>
+                <input type="text" id="model" name="model" value={motorcycleFormData.model} onChange={e => setMotorcycleFormData({...motorcycleFormData, model: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body" required />
               </div>
-              <div className="mb-4">
-                <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="plate">Placa:</label>
-                <input
-                  type="text"
-                  id="plate"
-                  value={motorcycleFormData.plate}
-                  onChange={(e) => setMotorcycleFormData({ ...motorcycleFormData, plate: e.target.value })}
-                  className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg text-light-text font-sans"
-                />
+              <div>
+                <label htmlFor="plate" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Placa</label>
+                <input type="text" id="plate" name="plate" value={motorcycleFormData.plate} onChange={e => setMotorcycleFormData({...motorcycleFormData, plate: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body" />
               </div>
-              <div className="flex justify-end">
-                <button type="submit" className="bg-secondary hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full mr-2 font-sans">Guardar</button>
-                <button type="button" onClick={() => setIsMotorcycleModalOpen(false)} className="bg-accent hover:bg-light-accent text-dark-bg px-4 py-2 rounded-full font-sans">Cancelar</button>
+              <div className="flex justify-between mt-6">
+                <button type="submit" className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">Guardar</button>
+                <button type="button" onClick={() => setIsMotorcycleModalOpen(false)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">Cancelar</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmation.isOpen}
+        onClose={handleCancelDelete}
+        onConfirm={deleteConfirmation.itemType === 'client' ? deleteClient : deleteMotorcycle}
+        title={`Eliminar ${deleteConfirmation.itemType === 'client' ? 'Cliente' : 'Moto'}`}
+        message={`¿Estás seguro de que quieres eliminar este ${deleteConfirmation.itemType === 'client' ? 'cliente y todas sus motos' : 'moto'}?`}
+      />
     </div>
   );
 };
