@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React from 'react';
+    import { useState, useEffect, useCallback, useMemo } from 'react';
     import { supabase } from '../supabaseClient';
     import { useAtom } from 'jotai';
     import { servicesAtom, clientsAtom, motorcyclesAtom, inventoryItemsAtom } from '../atoms';
@@ -357,17 +358,23 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
         }));
       }, [serviceFormData.laborCost, serviceFormData.productsUsed]);
 
-      const addProductToService = (productId, quantity) => {
-        const product = inventory.find(p => p.id === parseInt(productId));
-        if (!product) {
+      const addProductToService = (productId, quantityToAdd) => {
+        const productToAdd = inventory.find(p => p.id === parseInt(productId));
+        if (!productToAdd) {
           alert('Producto no encontrado.');
           return;
         }
-        const parsedQuantity = parseInt(quantity, 10);
+        const parsedQuantity = parseInt(quantityToAdd, 10);
         if (!parsedQuantity || parsedQuantity <= 0) {
             alert("Por favor, ingresa una cantidad válida.");
             return;
         }
+
+        if (productToAdd.quantity < parsedQuantity) {
+          alert(`No hay suficiente stock de ${productToAdd.name} en inventario. Stock disponible: ${productToAdd.quantity}`);
+          return;
+        }
+
 
         const existingProductIndex = serviceFormData.productsUsed.findIndex(p => p.productId === productId);
 
@@ -383,7 +390,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
           // Add new product
           setServiceFormData({
             ...serviceFormData,
-            productsUsed: [...serviceFormData.productsUsed, { productId: product.id, quantity: parsedQuantity, price: product.price_sold, name: product.name }],
+            productsUsed: [...serviceFormData.productsUsed, { productId: productToAdd.id, quantity: parsedQuantity, price: productToAdd.price_sold, name: productToAdd.name }],
           });
         }
       };
@@ -395,6 +402,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
         });
       };
 
+      const updateProductQuantity = (productId, quantity) => {
+        const updatedProductsUsed = serviceFormData.productsUsed.map(p =>
+          p.productId === productId ? { ...p, quantity: parseInt(quantity, 10) || 0 } : p
+        );
+        setServiceFormData({ ...serviceFormData, productsUsed: updatedProductsUsed });
+      };
+
+
       const sortedAndFilteredServices = useMemo(() => {
         let sortedServices = [...services];
 
@@ -403,7 +418,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
             const client = clients.find(c => c.id === service.client_id);
             const motorcycle = motorcycles.find(m => m.id === service.motorcycle_id);
             const clientName = client ? client.name.toLowerCase() : '';
-            const motorcycleInfo = motorcycle ? `${motorcycle.make} ${motorcycle.model}`.toLowerCase() : '';
+            const motorcycleInfo = motorcycle ? `${motorcycle.make || ''} ${motorcycle.model || ''}`.toLowerCase() : ''; // Handle undefined make/model
 
             return clientName.includes(searchTerm.toLowerCase()) ||
               motorcycleInfo.includes(searchTerm.toLowerCase()) ||
@@ -437,8 +452,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
         <div className="service-history p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
           <h1 className="text-3xl font-bold text-primary mb-6 font-graffiti tracking-wide">Historial de Servicios</h1>
 
-          <div className="mb-4 flex flex-wrap gap-2 justify-between items-center">
-            <div className="flex flex-grow gap-2">
+          <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap"> {/* Flex wrap for responsiveness */}
+            <div className="flex flex-grow gap-2 mb-2 sm:mb-0"> {/* Added margin bottom for small screens */}
               <input
                 type="text"
                 placeholder="Buscar en historial de servicios..."
@@ -446,15 +461,42 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                 onChange={handleSearchChange}
                 className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
               />
-              <button onClick={addService} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
-                Agregar Servicio
-              </button>
             </div>
+            <button onClick={addService} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
+              Agregar Servicio
+            </button>
+          </div>
+
+          <div className="sm:hidden flex justify-around mb-4"> {/* Sorting buttons for mobile */}
+            <button onClick={() => requestSort('date')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Fecha {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
+            <button onClick={() => requestSort('labor_cost')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Mano de Obra {sortConfig.key === 'labor_cost' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
+            <button onClick={() => requestSort('total_value')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Valor Total {sortConfig.key === 'total_value' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
           </div>
 
 
           <div className="overflow-x-auto">
-            <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0">
+            <div className="sm:hidden">
+              {sortedAndFilteredServices.map(service => {
+                const client = clients.find(c => c.id === service.client_id);
+                const motorcycle = motorcycles.find(m => m.id === service.motorcycle_id);
+                return (
+                  <div key={service.id} className="bg-dark-secondary rounded-lg shadow-premium-md border border-accent-premium mb-4 p-4"> {/* Improved card styling */}
+                    <h3 className="text-xl font-semibold text-light-primary font-display mb-2">{client?.name || 'Cliente Desconocido'}</h3> {/* Larger client name */}
+                    <p className="text-light-primary font-body mb-1"><span className="font-semibold">Fecha:</span> {new Date(service.date).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</p> {/* Added date to card header info */}
+                    <p className="text-light-primary font-body mb-1"><span className="font-semibold">Moto:</span> {motorcycle?.make || 'Desconocida'} {motorcycle?.model || ''}</p> {/* Display 'Desconocida' if make is missing, and handle model being missing */}
+                    <p className="text-light-primary font-body mb-1"><span className="font-semibold">Tipo:</span> {service.service_type}</p>
+                    <p className="text-light-primary font-body mb-1"><span className="font-semibold">Mano de Obra:</span> <span className="font-mono">${parseFloat(service.labor_cost).toLocaleString('es-CO')}</span></p> {/* Monospace font for amounts */}
+                    <p className="text-light-primary font-body"><span className="font-semibold">Valor Total:</span> <span className="font-mono">${parseFloat(service.total_value).toLocaleString('es-CO')}</span></p> {/* Monospace font for amounts */}
+                    <div className="flex justify-end gap-2 mt-4">
+                      <button onClick={() => editService(service)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
+                      <button onClick={() => confirmDeleteService(service.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
+                    </div>
+                  </div>
+                )})}
+              {sortedAndFilteredServices.length === 0 && <p className="text-light-primary text-center font-body">No hay servicios en el historial.</p>}
+            </div>
+
+            <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0 hidden sm:table">
               <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
                 <tr className="rounded-t-lg">
                   <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
@@ -492,7 +534,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                     <tr key={service.id} className="group hover:bg-dark-primary transition-colors duration-200">
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{new Date(service.date).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{client?.name || 'Cliente Desconocido'}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{motorcycle?.make + ' ' + motorcycle?.model || 'Moto Desconocida'}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{motorcycle?.make || 'Desconocida'} {motorcycle?.model || 'Desconocida'}</td> {/* Added default value here too */}
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${parseFloat(service.labor_cost).toLocaleString('es-CO')}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${parseFloat(service.total_value).toLocaleString('es-CO')}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{service.service_type}</td>
@@ -505,7 +547,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                     </tr>
                   )})}
               </tbody>
-              <tfoot className="bg-dark-secondary">
+              <tfoot className="bg-dark-secondary hidden sm:table-footer-group">
                 <tr>
                   <td colSpan="7" className="px-4 py-3 rounded-b-lg">
                     {sortedAndFilteredServices.length === 0 && <p className="text-light-primary text-center font-body">No hay servicios en el historial.</p>}
@@ -532,6 +574,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                   currentService={currentService}
                   addProductToService={addProductToService}
                   removeProductFromService={removeProductFromService}
+                  updateProductQuantity={updateProductQuantity}
+                  inventoryItems={inventory} // Pass inventory items
                 />
               </div>
             </div>
@@ -552,7 +596,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
     export default ServiceHistory;
 
 
-    const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFormData, clients, motorcycles, inventory, currentService, addProductToService, removeProductFromService }) => {
+    const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFormData, clients, motorcycles, inventory, currentService, addProductToService, removeProductFromService, updateProductQuantity, inventoryItems }) => { // Receive inventoryItems
         if (!isOpen) return null;
 
         const [clientSearchTerm, setClientSearchTerm] = useState('');
@@ -562,6 +606,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
         const [showMotorcycleDropdown, setShowMotorcycleDropdown] = useState(false);
         const [showInventoryDropdown, setShowInventoryDropdown] = useState(false);
         const [selectedInventoryProduct, setSelectedInventoryProduct] = useState('');
+        const [newProductQuantity, setNewProductQuantity] = useState(1); // State for quantity input
 
 
         const calculateTotalValue = (laborCost, productsUsed) => {
@@ -742,9 +787,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                           <li
                             key={product.id}
                             className="py-2 px-4 text-light-text hover:bg-dark-primary cursor-pointer"
-                            onClick={() => { setSelectedInventoryProduct(product.id); setInventorySearchTerm(product.name); setShowInventoryDropdown(false); }}
+                            onClick={() => { setSelectedInventoryProduct(product.id); setInventorySearchTerm(product.name); setShowInventoryDropdown(false); setNewProductQuantity(1); }}
                           >
-                            {product.name}
+                            {product.name} ({product.quantity} disponibles)
                           </li>
                         ))}
                         {filteredInventory.length === 0 && inventorySearchTerm && (
@@ -753,16 +798,37 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                       </ul>
                     )}
                     <ul>
-                      {serviceFormData.productsUsed.map(product => (
+                      {serviceFormData.productsUsed.map((product, index) => (
                         <li key={product.productId} className="flex items-center justify-between mb-1 font-sans">
-                          <span>{product.name} x{product.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeProductFromService(product.productId)}
-                            className="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded-full text-xs font-sans"
-                          >
-                            Eliminar
-                          </button>
+                          <span>{product.name}</span>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => updateProductQuantity(product.productId, product.quantity - 1)}
+                              className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold px-2 py-1 rounded-md shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium"
+                            >
+                              -
+                            </button>
+                            <input
+                              type="number"
+                              min="0"
+                              value={product.quantity}
+                              className="shadow appearance-none border border-gray-700 rounded w-16 mx-2 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text text-center"
+                              onChange={(e) => updateProductQuantity(product.productId, e.target.value)}
+                            />
+                            <button
+                              onClick={() => updateProductQuantity(product.productId, product.quantity + 1)}
+                              className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold px-2 py-1 rounded-md shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium"
+                            >
+                              +
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeProductFromService(product.productId)}
+                              className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold px-2 py-1 rounded-md shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium ml-2 text-xs"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -771,9 +837,16 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                         onClick={(e) => {
                           e.preventDefault();
                           if (selectedInventoryProduct) {
-                            addProductToService(parseInt(selectedInventoryProduct), 1);
-                            setSelectedInventoryProduct('');
-                            setInventorySearchTerm('');
+                            const selectedProduct = inventoryItems.find(item => item.id === parseInt(selectedInventoryProduct));
+                            if (selectedProduct && selectedProduct.quantity >= newProductQuantity) {
+                              addProductToService(parseInt(selectedInventoryProduct), newProductQuantity);
+                              setSelectedInventoryProduct('');
+                              setInventorySearchTerm('');
+                              setNewProductQuantity(1);
+                            } else {
+                              alert(`No hay suficiente stock de ${selectedProduct ? selectedProduct.name : 'producto'}. Stock disponible: ${selectedProduct ? selectedProduct.quantity : 0}`);
+                            }
+
                           }
                         }}
                         className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap"
@@ -784,15 +857,22 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
                         type="number"
                         placeholder="Cantidad"
                         min="1"
+                        value={newProductQuantity}
                         className="shadow appearance-none border border-gray-700 rounded w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text ml-2"
+                        onChange={(e) => setNewProductQuantity(parseInt(e.target.value) || 1)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
                             if (selectedInventoryProduct) {
-                              addProductToService(parseInt(selectedInventoryProduct), parseInt(e.target.value));
-                              setSelectedInventoryProduct('');
-                              setInventorySearchTerm('');
-                              e.target.value = "";
+                              const selectedProduct = inventoryItems.find(item => item.id === parseInt(selectedInventoryProduct));
+                              if (selectedProduct && selectedProduct.quantity >= newProductQuantity) {
+                                addProductToService(parseInt(selectedInventoryProduct), newProductQuantity);
+                                setSelectedInventoryProduct('');
+                                setInventorySearchTerm('');
+                                setNewProductQuantity(1);
+                              } else {
+                                alert(`No hay suficiente stock de ${selectedProduct ? selectedProduct.name : 'producto'}. Stock disponible: ${selectedProduct ? selectedProduct.quantity : 0}`);
+                              }
                             }
                           }
                         }}
