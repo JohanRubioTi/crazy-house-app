@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import ConfirmationModal from './ConfirmationModal';
+import { useAtom } from 'jotai';
+import { servicesAtom } from '../atoms';
+import { fetchServices } from '../supabaseService';
+import StockAlertModal from './StockAlertModal'; // Import StockAlertModal
 
 const getDefaultServiceFormData = () => ({
   clientId: '',
@@ -20,7 +24,7 @@ const getDefaultConfirmationState = () => ({
 });
 
 const ServiceHistory = () => {
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useAtom(servicesAtom);
   const [clients, setClients] = useState([]);
   const [motorcycles, setMotorcycles] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -30,34 +34,28 @@ const ServiceHistory = () => {
   const [serviceFormData, setServiceFormData] = useState(getDefaultServiceFormData());
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(getDefaultConfirmationState());
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [isStockAlertOpen, setIsStockAlertOpen] = useState(false); // Stock alert modal state
+  const [stockAlertMessage, setStockAlertMessage] = useState(''); // Stock alert message state
 
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
     try {
       const userId = await getUserId();
-      const [clientsData, motorcyclesData, inventoryData, servicesData] = await Promise.all([
+      const [clientsData, motorcyclesData, inventoryData] = await Promise.all([
         fetchClients(userId),
         fetchMotorcycles(userId),
         fetchInventoryItems(userId),
-        fetchServicesWithProducts(userId, sortConfig),
       ]);
       setClients(clientsData);
       setMotorcycles(motorcyclesData);
       setInventory(inventoryData);
-      setServices(servicesData);
-      setHasLoadedOnce(true);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError(error);
-    } finally {
-      setLoading(false);
     }
-  }, [sortConfig]);
+  }, []);
 
   const getUserId = async () => {
     const user = await supabase.auth.getUser();
@@ -83,49 +81,10 @@ const ServiceHistory = () => {
     return data || [];
   };
 
-  const fetchServicesWithProducts = async (userId, sortConfig) => {
-    let { data: servicesData, error: servicesError } = await supabase
-      .from('services')
-      .select('*')
-      .eq('user_id', userId)
-      .order(sortConfig.key, { ascending: sortConfig.direction === 'ascending' });
-    if (servicesError) throw servicesError;
-
-    if (servicesData) {
-      return Promise.all(
-        servicesData.map(async (service) => {
-          const productsUsed = await fetchServiceProducts(userId, service.id);
-          return { ...service, productsUsed, date: new Date(service.date).toISOString().split('T')[0] };
-        })
-      );
-    }
-    return [];
-  };
-
-  const fetchServiceProducts = async (userId, serviceId) => {
-    let { data: serviceProductsData, error: serviceProductsError } = await supabase
-      .from('service_products')
-      .select('*, inventory_items(name)')
-      .eq('service_id', serviceId)
-      .eq('user_id', userId);
-    if (serviceProductsError) throw serviceProductsError;
-
-    return serviceProductsData.map((sp) => ({
-      productId: sp.inventory_item_id,
-      quantity: sp.quantity,
-      price: sp.price,
-      name: sp.inventory_items.name,
-    }));
-  };
-
 
   useEffect(() => {
-    if (!hasLoadedOnce && services.length === 0) {
-      fetchData();
-    } else if (!hasLoadedOnce && services.length > 0) {
-      setHasLoadedOnce(true);
-    }
-  }, [fetchData, hasLoadedOnce, services.length]);
+    fetchData();
+  }, [fetchData]);
 
 
   const handleAddService = () => {
@@ -147,7 +106,6 @@ const ServiceHistory = () => {
       return;
     }
 
-    setLoading(true);
     try {
       const userId = await getUserId();
       const serviceDataToSave = prepareServiceDataForSave(userId, serviceFormData);
@@ -165,12 +123,10 @@ const ServiceHistory = () => {
 
       setIsServiceModalOpen(false);
       setServiceFormData(getDefaultServiceFormData());
-      fetchData();
+      fetchServices({ key: 'date', direction: 'descending' }).then(updatedServices => setServices(updatedServices));
     } catch (error) {
       console.error('Error saving service:', error);
       alert('Error saving service: ' + error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -215,7 +171,7 @@ const ServiceHistory = () => {
   const insertNewServiceProductsAndUpdateInventory = async (userId, serviceId, productsUsed, currentService, inventory) => {
     for (const product of productsUsed) {
       await insertServiceProduct(userId, serviceId, product);
-      await updateInventoryQuantity(userId, product, currentService, inventory);
+      await updateInventoryQuantity(userId, service, product, currentService, inventory);
     }
   };
 
@@ -231,7 +187,7 @@ const ServiceHistory = () => {
     if (productError) throw productError;
   };
 
-  const updateInventoryQuantity = async (userId, product, currentService, inventory) => {
+  const updateInventoryQuantity = async (userId, service, product, currentService, inventory) => {
     const inventoryItem = inventory.find(item => item.id === parseInt(product.productId));
     if (inventoryItem) {
       const newQuantity = calculateNewInventoryQuantity(inventoryItem, product, currentService);
@@ -258,18 +214,15 @@ const ServiceHistory = () => {
   const handleDeleteService = async () => {
     const serviceId = deleteConfirmation.itemId;
     setDeleteConfirmation(getDefaultConfirmationState());
-    setLoading(true);
     try {
       const userId = await getUserId();
       const serviceProducts = await getServiceProductsForDeletion(userId, serviceId);
       await deleteServiceDataAndProducts(userId, serviceId);
       await restoreInventoryQuantities(userId, serviceProducts);
-      fetchData();
+      fetchServices({ key: 'date', direction: 'descending' }).then(updatedServices => setServices(updatedServices));
     } catch (error) {
       console.error('Error deleting service:', error);
       alert('Error deleting service: ' + error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -323,7 +276,7 @@ const ServiceHistory = () => {
     return sortedServices;
   }, [services, searchTerm, sortConfig, clients, motorcycles]);
 
-  if (loading) return <div className="text-center"><div className="spinner mb-4"></div></div>;
+
   if (error) return <p className="text-light-text">Error: {error.message}</p>;
 
   return (
@@ -449,6 +402,8 @@ const ServiceHistory = () => {
               motorcycles={motorcycles}
               inventory={inventory}
               currentService={currentService}
+              setIsStockAlertOpen={setIsStockAlertOpen} // Pass setIsStockAlertOpen
+              setStockAlertMessage={setStockAlertMessage} // Pass setStockAlertMessage
             />
           </div>
         </div>
@@ -461,6 +416,11 @@ const ServiceHistory = () => {
         title="Eliminar Servicio"
         message="¿Estás seguro de que quieres eliminar este servicio del historial?"
       />
+      <StockAlertModal
+        isOpen={isStockAlertOpen}
+        onClose={() => setIsStockAlertOpen(false)}
+        message={stockAlertMessage}
+      />
     </div>
   );
 };
@@ -468,7 +428,7 @@ const ServiceHistory = () => {
 export default ServiceHistory;
 
 
-const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFormData, clients, motorcycles, inventory, currentService }) => {
+const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFormData, clients, motorcycles, inventory, currentService, setIsStockAlertOpen, setStockAlertMessage }) => { // Receive setIsStockAlertOpen and setStockAlertMessage as props
   if (!isOpen) return null;
 
   const [clientSearchTerm, setClientSearchTerm] = useState('');
@@ -479,6 +439,17 @@ const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFo
   const [showInventoryDropdown, setShowInventoryDropdown] = useState(false);
   const [selectedInventoryProduct, setSelectedInventoryProduct] = useState('');
   const [newProductQuantity, setNewProductQuantity] = useState(1);
+  const [quantities, setQuantities] = useState({});
+
+
+  useEffect(() => {
+    const initialQuantities = {};
+    serviceFormData.productsUsed.forEach(product => {
+      initialQuantities[product.productId] = product.quantity;
+    });
+    setQuantities(initialQuantities);
+  }, [serviceFormData.productsUsed]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -488,17 +459,20 @@ const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFo
   const handleAddProductToService = (productId, quantityToAdd) => {
     const productToAdd = inventory.find(p => p.id === parseInt(productId));
     if (!productToAdd) {
-      alert('Producto no encontrado.');
+      setStockAlertMessage('Producto no encontrado.'); // Set modal message
+      setIsStockAlertOpen(true); // Open stock alert modal
       return;
     }
     const parsedQuantity = parseInt(quantityToAdd, 10);
     if (!parsedQuantity || parsedQuantity <= 0) {
-        alert("Por favor, ingresa una cantidad válida.");
+      setStockAlertMessage("Por favor, ingresa una cantidad válida."); // Set modal message
+      setIsStockAlertOpen(true); // Open stock alert modal
         return;
     }
 
     if (productToAdd.quantity < parsedQuantity) {
-      alert(`No hay suficiente stock de ${productToAdd.name} en inventario. Stock disponible: ${productToAdd.quantity}`);
+      setStockAlertMessage(`No hay suficiente stock de ${productToAdd.name} en inventario. Stock disponible: ${productToAdd.quantity}`); // Set modal message
+      setIsStockAlertOpen(true); // Open stock alert modal
       return;
     }
 
@@ -509,18 +483,33 @@ const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFo
       const updatedProductsUsed = [...serviceFormData.productsUsed];
       updatedProductsUsed[existingProductIndex] = { ...updatedProductsUsed[existingProductIndex], quantity: updatedProductsUsed[existingProductIndex].quantity + parsedQuantity };
       setServiceFormData({ ...serviceFormData, productsUsed: updatedProductsUsed });
+      setQuantities({...quantities, [productId]: updatedProductsUsed[existingProductIndex].quantity})
     } else {
       setServiceFormData({ ...serviceFormData, productsUsed: [...serviceFormData.productsUsed, { productId: productToAdd.id, quantity: parsedQuantity, price: productToAdd.price_sold, name: productToAdd.name }] });
+      setQuantities({...quantities, [productId]: parsedQuantity})
     }
   };
 
   const handleRemoveProductFromService = (productId) => {
-    setServiceFormData({ ...serviceFormData, productsUsed: serviceFormData.productsUsed.filter(p => p.productId !== productId) });
+    const updatedProducts = serviceFormData.productsUsed.filter(p => p.productId !== productId);
+    setServiceFormData({ ...serviceFormData, productsUsed: updatedProducts });
+    const updatedQuantities = {...quantities};
+    delete updatedQuantities[productId];
+    setQuantities(updatedQuantities);
   };
 
-  const handleUpdateProductQuantity = (productId) => {
-    const updatedProductsUsed = serviceFormData.productsUsed.map(p => p.productId === productId ? { ...p, quantity: parseInt(quantity, 10) || 0 } : p);
+  const handleUpdateProductQuantity = (productId, newQuantity) => {
+    const productToAdd = inventory.find(p => p.id === productId);
+    if (newQuantity > productToAdd.quantity) {
+      setStockAlertMessage(`No hay suficiente stock de ${productToAdd.name} en inventario. Stock disponible: ${productToAdd.quantity}`); // Set modal message
+      setIsStockAlertOpen(true); // Open stock alert modal
+      return;
+    }
+    const updatedProductsUsed = serviceFormData.productsUsed.map(p =>
+      p.productId === productId ? { ...p, quantity: newQuantity } : p
+    );
     setServiceFormData({ ...serviceFormData, productsUsed: updatedProductsUsed });
+    setQuantities({...quantities, [productId]: newQuantity});
   };
 
 
@@ -589,169 +578,15 @@ const ServiceModal = ({ isOpen, onClose, onSubmit, serviceFormData, setServiceFo
         )}
       </div>
 
-      <div>
-        <label className="block text-light-text text-sm font-semibold mb-2 font-sans" htmlFor="laborCost">Valor Mano de Obra:</label>
-        <input
-          type="number"
-          id="laborCost"
-          name="laborCost"
-          value={serviceFormData.laborCost}
-          onChange={handleInputChange}
-          className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="date">Fecha:</label>
-        <input
-          type="date"
-          id="date"
-          name="date"
-          value={serviceFormData.date}
-          onChange={handleInputChange}
-          className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
-        />
-      </div>
-
-      <div>
-        <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="serviceType">Tipo de Servicio:</label>
-        <input
-          type="text"
-          id="serviceType"
-          name="serviceType"
-          value={serviceFormData.serviceType}
-          onChange={handleInputChange}
-          className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
-        />
-      </div>
-
-      <div>
-        <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="kilometers">Kilometraje:</label>
-        <input
-          type="number"
-          id="kilometers"
-          name="kilometers"
-          value={serviceFormData.kilometers}
-          onChange={handleInputChange}
-          className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
-        />
-      </div>
-      <div className="col-span-2">
-        <label className="block text-light-text text-sm font-bold mb-2 font-sans" htmlFor="notes">Notas:</label>
-        <textarea
-          id="notes"
-          name="notes"
-          value={serviceFormData.notes}
-          onChange={handleInputChange}
-          className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text"
-          rows="3"
-        />
-      </div>
-
-      <div className="col-span-2 relative">
-        <label className="block text-light-text text-sm font-bold mb-2 font-sans">Productos Usados:</label>
-        <input
-          type="text"
-          placeholder="Buscar producto..."
-          value={inventorySearchTerm}
-          onChange={(e) => { setInventorySearchTerm(e.target.value); setShowInventoryDropdown(true); setSelectedInventoryProduct('') }}
-          onBlur={() => setTimeout(() => setShowInventoryDropdown(false), 100)}
-          onFocus={() => setShowInventoryDropdown(true)}
-          className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text mb-1"
-        />
-        {showInventoryDropdown && (
-          <ul className="absolute z-10 mt-1 w-full bg-dark-secondary border border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
-            {filteredInventory.map(product => (
-              <li
-                key={product.id}
-                className="py-2 px-4 text-light-text hover:bg-dark-primary cursor-pointer"
-                onClick={() => { setSelectedInventoryProduct(product.id); setInventorySearchTerm(product.name); setShowInventoryDropdown(false); setNewProductQuantity(1); }}
-              >
-                {product.name} ({product.quantity} disponibles)
-              </li>
-            ))}
-            {filteredInventory.length === 0 && inventorySearchTerm && (
-              <li className="py-2 px-4 text-light-text">No se encontraron productos</li>
-            )}
-          </ul>
-        )}
-        <ul>
-          {serviceFormData.productsUsed.map((product, index) => (
-            <li key={product.productId} className="flex items-center justify-between mb-1 font-sans">
-              <span>{product.name}</span>
-              <div className="flex items-center">
-                <button
-                  onClick={() => handleUpdateProductQuantity(product.productId, product.quantity - 1)}
-                  className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold px-2 py-1 rounded-md shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min="0"
-                  value={product.quantity}
-                  className="shadow appearance-none border border-gray-700 rounded w-16 mx-2 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text text-center"
-                  onChange={(e) => handleUpdateProductQuantity(product.productId, e.target.value)}
-                />
-                <button
-                  onClick={() => handleUpdateProductQuantity(product.productId, product.quantity + 1)}
-                  className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold px-2 py-1 rounded-md shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium"
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveProductFromService(product.productId)}
-                  className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold px-2 py-1 rounded-md shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium ml-2 text-xs"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <div className="flex items-end">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              if (selectedInventoryProduct) {
-                handleAddProductToService(parseInt(selectedInventoryProduct), newProductQuantity);
-                setSelectedInventoryProduct('');
-                setInventorySearchTerm('');
-                setNewProductQuantity(1);
-              }
-            }}
-            className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap"
-          >
-            Añadir Producto
-          </button>
-          <input
-            type="number"
-            placeholder="Cantidad"
-            min="1"
-            value={newProductQuantity}
-            className="shadow appearance-none border border-gray-700 rounded w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-dark-bg font-sans text-light-text ml-2"
-            onChange={(e) => setNewProductQuantity(parseInt(e.target.value) || 1)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (selectedInventoryProduct) {
-                  handleAddProductToService(parseInt(selectedInventoryProduct), newProductQuantity);
-                  setSelectedInventoryProduct('');
-                  setInventorySearchTerm('');
-                  setNewProductQuantity(1);
-                }
-              }
-            }}
-          />
-        </div>
-      </div>
-
       <div className="col-span-2 flex justify-end mt-6">
         <button type="submit" className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">Guardar</button>
         <button type="button" onClick={onClose} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">Cancelar</button>
       </div>
+      <StockAlertModal
+        isOpen={isStockAlertOpen}
+        onClose={() => setIsStockAlertOpen(false)}
+        message={stockAlertMessage}
+      />
     </form>
   )
 }
