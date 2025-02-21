@@ -218,8 +218,8 @@ const Inventory = () => {
     <div className="inventory p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
       <h1 className="text-3xl font-bold text-primary mb-6 font-graffiti tracking-wide">Inventario</h1>
 
-      <div className="mb-4 flex flex-wrap gap-2 justify-between items-center">
-        <div className="flex flex-grow gap-2">
+      <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap">
+        <div className="flex flex-grow gap-2 mb-2 sm:mb-0">
           <input
             type="text"
             placeholder="Buscar en inventario..."
@@ -227,14 +227,40 @@ const Inventory = () => {
             onChange={handleSearchChange}
             className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
           />
-          <button onClick={addItem} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
-            Agregar Ítem
-          </button>
         </div>
+        <button onClick={addItem} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
+          Agregar Ítem
+        </button>
       </div>
 
+      <div className="sm:hidden flex justify-around mb-4">
+        <button onClick={() => requestSort('name')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
+        <button onClick={() => requestSort('quantity')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Cantidad {sortConfig.key === 'quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
+        <button onClick={() => requestSort('price_sold')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Precio Venta {sortConfig.key === 'price_sold' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
+      </div>
+
+
       <div className="overflow-x-auto">
-        <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0">
+        <div className="sm:hidden">
+          {sortedAndFilteredItems.map(item => (
+            <div key={item.id} className="bg-dark-secondary rounded-lg shadow-premium-md border border-accent-premium mb-4 p-4">
+              <h3 className="text-xl font-semibold text-light-primary font-display mb-2">{item.name}</h3>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Cantidad:</span> {item.quantity} {item.unit_type}</p>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Precio Compra:</span> ${item.price_bought.toLocaleString('es-CO')}</p>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Precio Venta:</span> ${item.price_sold.toLocaleString('es-CO')}</p>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Unidad:</span> {item.unit_type}</p>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Reorden:</span> {item.restock_quantity}</p>
+              <p className="text-light-primary font-body"><span className="font-semibold">Reciente:</span> {new Date(item.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+              <div className="flex justify-end gap-2 mt-4">
+                <button onClick={() => editItem(item)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
+                <button onClick={() => confirmDeleteItem(item.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
+              </div>
+            </div>
+          ))}
+          {sortedAndFilteredItems.length === 0 && <p className="text-light-primary text-center font-body">No hay items en inventario.</p>}
+        </div>
+
+        <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0 hidden sm:table">
           <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
             <tr className="rounded-t-lg">
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
@@ -294,7 +320,7 @@ const Inventory = () => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-dark-secondary">
+          <tfoot className="bg-dark-secondary hidden sm:table-footer-group">
             <tr>
               <td colSpan="8" className="px-4 py-3 rounded-b-lg">
                 {sortedAndFilteredItems.length === 0 && <p className="text-light-primary text-center font-body">No hay items en inventario.</p>}

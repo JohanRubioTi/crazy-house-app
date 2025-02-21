@@ -318,8 +318,8 @@ const Clients = () => {
     <div className="clients p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
       <h1 className="text-3xl font-display text-light-primary mb-6 tracking-wide">Clientes</h1>
 
-      <div className="mb-4 flex flex-wrap gap-2 justify-between items-center">
-        <div className="flex flex-grow gap-2">
+      <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap">
+        <div className="flex flex-grow gap-2 mb-2 sm:mb-0">
           <input
             type="text"
             placeholder="Buscar clientes..."
@@ -327,38 +327,86 @@ const Clients = () => {
             onChange={handleSearchChange}
             className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
           />
-          <button onClick={addClient} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
-            Agregar Cliente
-          </button>
         </div>
+        <button onClick={addClient} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
+          Agregar Cliente
+        </button>
       </div>
 
       {/* Expanded Client Motorcycles Section - Displayed above table when expanded */}
+      {/* MOBILE VIEW CONDITIONAL REMOVAL */}
+      <div className="sm:hidden">
       {expandedClientId && (
-        <div className="mb-6 bg-dark-secondary p-6 rounded-lg shadow-premium-md border border-accent-premium">
+        <div>
+          {/*
           <h3 className="text-xl font-semibold text-light-primary font-display mb-4">Motos del Cliente</h3>
-          {clients.find(c => c.id === expandedClientId)?.motorcycles && clients.find(c => c.id === expandedClientId)?.motorcycles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {clients.find(c => c.id === expandedClientId).motorcycles.map(motorcycle => (
-                <div key={motorcycle.id} className="bg-dark-primary p-4 rounded-lg shadow-md border border-gray-700">
-                  <p className="text-light-text font-body"><span className="font-semibold">Marca:</span> {motorcycle.make}</p>
-                  <p className="text-light-text font-body"><span className="font-semibold">Modelo:</span> {motorcycle.model}</p>
-                  <p className="text-light-text font-body"><span className="font-semibold">Placa:</span> {motorcycle.plate || 'N/A'}</p>
-                  <div className="mt-2 flex justify-end gap-2">
-                    <button onClick={() => editMotorcycle(clients.find(c => c.id === expandedClientId), motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar Moto</button>
-                    <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar Moto</button>
+          */}
+          {/* REMOVE THIS SECTION ON MOBILE */}
+          {/*clients.find(c => c.id === expandedClientId)?.motorcycles && clients.find(c => c.id === expandedClientId)?.motorcycles.length > 0 ? (
+            <div className="mb-6 bg-dark-secondary p-6 rounded-lg shadow-premium-md border border-accent-premium">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {clients.find(c => c.id === expandedClientId).motorcycles.map(motorcycle => (
+                  <div key={motorcycle.id} className="bg-dark-primary p-4 rounded-lg shadow-md border border-gray-700">
+                    <p className="text-light-text font-body"><span className="font-semibold">Marca:</span> {motorcycle.make}</p>
+                    <p className="text-light-text font-body"><span className="font-semibold">Modelo:</span> {motorcycle.model}</p>
+                    <p className="text-light-text font-body"><span className="font-semibold">Placa:</span> {motorcycle.plate || 'N/A'}</p>
+                    <div className="mt-2 flex justify-end gap-2">
+                      <button onClick={() => editMotorcycle(clients.find(c => c.id === expandedClientId), motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar Moto</button>
+                      <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar Moto</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ) : (
             <p className="text-light-primary font-body">No hay motos registradas para este cliente.</p>
           )}
+          */}
         </div>
       )}
+      </div>
+
 
       <div className="overflow-x-auto">
-        <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0">
+        <div className="sm:hidden">
+          {sortedAndFilteredClients.map(client => (
+            <div key={client.id} className="bg-dark-secondary rounded-lg shadow-premium-md border border-accent-premium mb-4 p-4">
+              <h3 className="text-xl font-semibold text-light-primary font-display mb-2">{client.name}</h3>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Teléfono:</span> {client.contact}</p>
+              <p className="text-light-primary font-body"><span className="font-semibold">Reciente:</span> {new Date(client.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+              {expandedClientId === client.id && client.motorcycles && client.motorcycles.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-lg font-semibold text-light-primary font-display mb-2">Motos</h4>
+                  {client.motorcycles.map(motorcycle => (
+                    <div key={motorcycle.id} className="bg-dark-primary p-3 rounded-lg shadow-md border border-gray-700 mb-2">
+                      <p className="text-light-text font-body"><span className="font-semibold">Marca:</span> {motorcycle.make}</p>
+                      <p className="text-light-text font-body"><span className="font-semibold">Modelo:</span> {motorcycle.model}</p>
+                      <p className="text-light-text font-body"><span className="font-semibold">Placa:</span> {motorcycle.plate || 'N/A'}</p>
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => editMotorcycle(client, motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar Moto</button>
+                        <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar Moto</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-end gap-2 mt-4">
+                <button onClick={() => editClient(client)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
+                <button onClick={() => confirmDeleteClient(client.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
+                <button onClick={() => addMotorcycle(client.id)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Añadir Moto</button>
+                <button
+                  onClick={() => toggleClientExpansion(client.id)}
+                  className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs"
+                >
+                  {expandedClientId === client.id ? 'Colapsar' : 'Expandir'}
+                </button>
+              </div>
+            </div>
+          ))}
+          {sortedAndFilteredClients.length === 0 && <p className="text-light-primary text-center font-body">No hay clientes que mostrar.</p>}
+        </div>
+
+        <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0 hidden sm:table">
           <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
             <tr className="rounded-t-lg">
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
@@ -401,7 +449,7 @@ const Clients = () => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-dark-secondary">
+          <tfoot className="bg-dark-secondary hidden sm:table-footer-group">
             <tr>
               <td colSpan="4" className="px-4 py-3 rounded-b-lg">
                 {sortedAndFilteredClients.length === 0 && <p className="text-light-primary text-center font-body">No hay clientes que mostrar.</p>}
