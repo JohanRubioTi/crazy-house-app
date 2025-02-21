@@ -246,8 +246,8 @@ const Inventory = () => {
             <div key={item.id} className="bg-dark-secondary rounded-lg shadow-premium-md border border-accent-premium mb-4 p-4">
               <h3 className="text-xl font-semibold text-light-primary font-display mb-2">{item.name}</h3>
               <p className="text-light-primary font-body mb-1"><span className="font-semibold">Cantidad:</span> {item.quantity} {item.unit_type}</p>
-              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Precio Compra:</span> ${item.price_bought.toLocaleString('es-CO')}</p>
-              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Precio Venta:</span> ${item.price_sold.toLocaleString('es-CO')}</p>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Precio Compra:</span> ${typeof item.price_bought === 'number' ? item.price_bought.toLocaleString('es-CO') : 'N/A'}</p>
+              <p className="text-light-primary font-body mb-1"><span className="font-semibold">Precio Venta:</span> ${typeof item.price_sold === 'number' ? item.price_sold.toLocaleString('es-CO') : 'N/A'}</p>
               <p className="text-light-primary font-body mb-1"><span className="font-semibold">Unidad:</span> {item.unit_type}</p>
               <p className="text-light-primary font-body mb-1"><span className="font-semibold">Reorden:</span> {item.restock_quantity}</p>
               <p className="text-light-primary font-body"><span className="font-semibold">Reciente:</span> {new Date(item.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
@@ -306,8 +306,8 @@ const Inventory = () => {
               <tr key={item.id} className="group hover:bg-dark-primary transition-colors duration-200">
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{item.name}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{item.quantity} {item.unit_type}</td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${item.price_bought.toLocaleString('es-CO')}</td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${item.price_sold.toLocaleString('es-CO')}</td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${typeof item.price_bought === 'number' ? item.price_bought.toLocaleString('es-CO') : 'N/A'}</td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${typeof item.price_sold === 'number' ? item.price_sold.toLocaleString('es-CO') : 'N/A'}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{item.unit_type}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{item.restock_quantity}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{new Date(item.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</td>

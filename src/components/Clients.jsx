@@ -11,10 +11,11 @@ import {
   deleteMotorcycle
 } from '../supabaseService';
 import ConfirmationModal from './ConfirmationModal'; // Import confirmation modal
+import AddClientModal from './AddClientModal'; // Import AddClientModal
 
 const Clients = () => {
   const [clients, setClients] = useAtom(clientsAtom);
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false); // State for client modal visibility
   const [isMotorcycleModalOpen, setIsMotorcycleModalOpen] = useState(false);
   const [currentClient, setCurrentClient] = useState(null);
   const [clientFormData, setClientFormData] = useState({ name: '', contact: '' });
@@ -60,13 +61,13 @@ const Clients = () => {
   const addClient = () => {
     setClientFormData({ name: '', contact: '' });
     setCurrentClient(null);
-    setIsClientModalOpen(true);
+    setIsClientModalOpen(true); // Open client modal
   };
 
   const editClient = (client) => {
     setClientFormData({ name: client.name, contact: client.contact });
     setCurrentClient(client);
-    setIsClientModalOpen(true);
+    setIsClientModalOpen(true); // Open client modal
   };
 
   const handleClientSubmit = async (e) => {
@@ -90,7 +91,7 @@ const Clients = () => {
         setClients(prevClients => [...prevClients, { ...clientFormData, id: Date.now() }]);
       }
 
-      setIsClientModalOpen(false);
+      setIsClientModalOpen(false); // Close client modal after submit
       setClientFormData({ name: '', contact: '' });
       // Removed loadClients here to prevent refetch after modal submit
     } catch (err) {
@@ -334,15 +335,12 @@ const Clients = () => {
       </div>
 
       {/* Expanded Client Motorcycles Section - Displayed above table when expanded */}
-      {/* MOBILE VIEW CONDITIONAL REMOVAL */}
-      <div className="sm:hidden">
+      {/* DESKTOP VIEW - ABOVE TABLE */}
+      <div className="mt-6 sm:block hidden"> {/* Show only on desktop */}
       {expandedClientId && (
         <div>
-          {/*
           <h3 className="text-xl font-semibold text-light-primary font-display mb-4">Motos del Cliente</h3>
-          */}
-          {/* REMOVE THIS SECTION ON MOBILE */}
-          {/*clients.find(c => c.id === expandedClientId)?.motorcycles && clients.find(c => c.id === expandedClientId)?.motorcycles.length > 0 ? (
+          {clients.find(c => c.id === expandedClientId)?.motorcycles && clients.find(c => c.id === expandedClientId)?.motorcycles.length > 0 ? (
             <div className="mb-6 bg-dark-secondary p-6 rounded-lg shadow-premium-md border border-accent-premium">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {clients.find(c => c.id === expandedClientId).motorcycles.map(motorcycle => (
@@ -361,7 +359,6 @@ const Clients = () => {
           ) : (
             <p className="text-light-primary font-body">No hay motos registradas para este cliente.</p>
           )}
-          */}
         </div>
       )}
       </div>
@@ -460,32 +457,15 @@ const Clients = () => {
       </div>
 
 
-      {/* Client Modal */}
-      {isClientModalOpen && (
-        <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center backdrop-blur-sm">
-          <div className="bg-dark-secondary bg-opacity-90 backdrop-blur-md rounded-xl p-8 w-full max-w-md shadow-lg border border-accent-premium">
-            <h2 className="text-2xl font-semibold text-light-primary mb-6 font-display">{currentClient ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
-            <form onSubmit={handleClientSubmit} className="space-y-5">
-              <div>
-                <label htmlFor="name" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Nombre</label>
-                <input type="text" id="name" name="name" value={clientFormData.name} onChange={e => setClientFormData({...clientFormData, name: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body"/>
-              </div>
-              <div>
-                <label htmlFor="contact" className="block text-accent-premium text-sm font-semibold mb-2 text-light-primary font-body">Teléfono</label>
-                <input type="text" id="contact" name="contact" value={clientFormData.contact} onChange={e => setClientFormData({...clientFormData, contact: e.target.value})} className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-light-primary bg-dark-primary leading-tight focus:outline-none focus:shadow-outline border-accent-premium font-body"/>
-              </div>
-              <div className="flex justify-between mt-6">
-                <button type="submit" className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
-                  Guardar
-                </button>
-                <button type="button" onClick={() => setIsClientModalOpen(false)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Client Modal - Moved to AddClientModal.jsx */}
+      <AddClientModal
+        isOpen={isClientModalOpen}
+        onClose={() => setIsClientModalOpen(false)}
+        currentClient={currentClient}
+        clientFormData={clientFormData}
+        setClientFormData={setClientFormData}
+        handleClientSubmit={handleClientSubmit}
+      />
 
       {/* Motorcycle Modal */}
       {isMotorcycleModalOpen && (
