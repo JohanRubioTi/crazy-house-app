@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
     import Clients from './components/Clients';
     import Inventory from './components/Inventory';
     import ServiceHistory from './components/ServiceHistory';
+    import Expenses from './components/Expenses'; // Import Expenses component
     import './App.css';
     import { supabase } from './supabaseClient';
     import { useAtom } from 'jotai';
@@ -203,6 +204,7 @@ import React, { useState, useEffect } from 'react';
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/service-history" element={<ServiceHistory />} />
+                <Route path="/expenses" element={<Expenses />} /> {/* Add Expenses route */}
               </Routes>
             </div>
             <nav className="bottom-nav">
@@ -221,6 +223,10 @@ import React, { useState, useEffect } from 'react';
               <NavLink to="/service-history" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
                 <span className="nav-icon">📜</span>
                 <span className="nav-label">Historial</span>
+              </NavLink>
+              <NavLink to="/expenses" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}> {/* Add Expenses navlink */}
+                <span className="nav-icon">💸</span>
+                <span className="nav-label">Expenses</span>
               </NavLink>
             </nav>
           </div>

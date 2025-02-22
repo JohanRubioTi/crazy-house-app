@@ -244,7 +244,7 @@ const MainPanel = ({ onLogout }) => {
 
     return (
         <div className="main-panel p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
-            <div className="flex justify-between items-center mb-6"> {/* Adjusted mb and flex container */}
+            <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-display text-light-primary tracking-wide">Panel de Administración</h1>
                 <button onClick={onLogout} className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
                     Cerrar Sesión
@@ -252,8 +252,7 @@ const MainPanel = ({ onLogout }) => {
             </div>
 
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"> {/* Reduced mb */}
-                {/* Alerts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {alerts.length > 0 && (
                   <div className="bg-dark-secondary p-5 rounded-xl shadow-premium-md border border-accent-premium">
                       <h2 className="text-lg font-semibold text-highlight-premium mb-3 font-display">Alertas</h2>
@@ -268,7 +267,6 @@ const MainPanel = ({ onLogout }) => {
                 )}
 
 
-                {/* Earnings & Expenses Summary */}
                 <div className="bg-dark-secondary p-5 rounded-xl shadow-premium-md border border-accent-premium">
                     <h2 className="text-lg font-semibold text-highlight-premium mb-3 font-display">Resumen Financiero</h2>
                     <p className="text-success-premium text-xl font-semibold font-body">Ganancias: <span className="text-light-primary font-mono">${earnings.toLocaleString('es-CO')}</span></p>
@@ -278,14 +276,12 @@ const MainPanel = ({ onLogout }) => {
                     </button>
                 </div>
 
-                {/* Quick Actions Panel - Always show, adjust layout with alerts */}
-                <div className={`bg-dark-secondary p-5 rounded-xl shadow-premium-md border border-accent-premium ${alerts.length > 0 ? '' : 'md:col-start-2'}`}> {/* Adjust col-start if no alerts */}
+                <div className={`bg-dark-secondary p-5 rounded-xl shadow-premium-md border border-accent-premium ${alerts.length > 0 ? '' : 'md:col-start-2'}`}>
                     <QuickActionsPanel />
                 </div>
             </div>
 
-            {/* Charts */}
-            <div className="bg-dark-secondary p-6 rounded-xl shadow-premium-md border border-accent-premium mb-6"> {/* Reduced mb */}
+            <div className="bg-dark-secondary p-6 rounded-xl shadow-premium-md border border-accent-premium mb-6">
                 <div className="flex justify-between items-center mb-5">
                     <h2 className="text-xl font-semibold text-light-primary font-display">Gráficos</h2>
                     <button
@@ -319,8 +315,7 @@ const MainPanel = ({ onLogout }) => {
                 </ResponsiveContainer>
             </div>
 
-            {/* Dynamic Inventory Levels Display */}
-            <div className="bg-dark-secondary p-6 rounded-xl shadow-premium-md border border-accent-premium mb-6"> {/* Reduced mb */}
+            <div className="bg-dark-secondary p-6 rounded-xl shadow-premium-md border border-accent-premium mb-6">
                 <h2 className="text-xl font-semibold text-light-primary font-display">Niveles de Inventario</h2>
                     <div className="overflow-x-auto">
                         <table className="min-w-full table-fixed">
@@ -353,10 +348,8 @@ const MainPanel = ({ onLogout }) => {
             </div>
 
 
-            {/* Statistical Analysis */}
             <StatisticsPanel />
 
-            {/* Expense Modal */}
             {isExpenseModalOpen && (
                 <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center backdrop-blur-sm">
                     <div className="bg-dark-secondary bg-opacity-90 backdrop-blur-md rounded-xl p-8 w-full max-w-md shadow-lg border border-accent-premium">
