@@ -14,6 +14,9 @@ import React, { useState, useEffect } from 'react';
     import { fetchServices } from './supabaseService';
     import { fetchExpenses } from './supabaseService';
 
+    // Import icons from react-icons
+    import { FaHome, FaUsers, FaBoxes, FaHistory, FaCoins } from 'react-icons/fa';
+
 
     function App() {
       const location = useLocation();
@@ -209,23 +212,23 @@ import React, { useState, useEffect } from 'react';
             </div>
             <nav className="bottom-nav">
               <NavLink to="/" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                <span className="nav-icon">🏠</span>
+                <span className="nav-icon"><FaHome /></span>
                 <span className="nav-label">Inicio</span>
               </NavLink>
               <NavLink to="/clients" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                <span className="nav-icon">👥</span>
+                <span className="nav-icon"><FaUsers /></span>
                 <span className="nav-label">Clientes</span>
               </NavLink>
               <NavLink to="/inventory" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                <span className="nav-icon">📦</span>
+                <span className="nav-icon"><FaBoxes /></span>
                 <span className="nav-label">Inventario</span>
               </NavLink>
               <NavLink to="/service-history" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                <span className="nav-icon">📜</span>
+                <span className="nav-icon"><FaHistory /></span>
                 <span className="nav-label">Historial</span>
               </NavLink>
               <NavLink to="/expenses" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}> {/* Add Expenses navlink */}
-                <span className="nav-icon">💸</span>
+                <span className="nav-icon"><FaCoins /></span>
                 <span className="nav-label">Expenses</span>
               </NavLink>
             </nav>

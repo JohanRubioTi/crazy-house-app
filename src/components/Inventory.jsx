@@ -3,6 +3,9 @@ import { useAtom } from 'jotai';
 import { inventoryItemsAtom } from '../atoms';
 import { fetchInventory, updateInventoryItem, insertInventoryItem, deleteInventoryItem, updateInventoryItemQuantity } from '../supabaseService';
 import ConfirmationModal from './ConfirmationModal'; // Import confirmation modal
+// Import icons
+import { FaEdit, FaTrash, FaSearch, FaBoxes, FaSortNumericDown, FaDollarSign, FaRuler, FaSync, FaClock } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 
 const Inventory = () => {
   const [items, setItems] = useAtom(inventoryItemsAtom);
@@ -219,24 +222,33 @@ const Inventory = () => {
       <h1 className="text-3xl font-bold text-primary mb-6 font-graffiti tracking-wide">Inventario</h1>
 
       <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap">
-        <div className="flex flex-grow gap-2 mb-2 sm:mb-0">
+        <div className="flex flex-grow gap-2 mb-2 sm:mb-0 relative">
           <input
             type="text"
             placeholder="Buscar en inventario..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
+            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow pl-10"
           />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FaSearch className="text-light-text" />
+          </div>
         </div>
-        <button onClick={addItem} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
-          Agregar Ítem
+        <button onClick={addItem} className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap flex items-center gap-2">
+          <FaPlus /> Agregar Ítem
         </button>
       </div>
 
       <div className="sm:hidden flex justify-around mb-4">
-        <button onClick={() => requestSort('name')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
-        <button onClick={() => requestSort('quantity')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Cantidad {sortConfig.key === 'quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
-        <button onClick={() => requestSort('price_sold')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm">Precio Venta {sortConfig.key === 'price_sold' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</button>
+        <button onClick={() => requestSort('name')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center gap-2">
+          <FaBoxes /> Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+        </button>
+        <button onClick={() => requestSort('quantity')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center gap-2">
+          <FaSortNumericDown /> Cantidad {sortConfig.key === 'quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+        </button>
+        <button onClick={() => requestSort('price_sold')} className="bg-dark-secondary hover:bg-dark-primary text-light-primary font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center gap-2">
+          <FaDollarSign /> Precio Venta {sortConfig.key === 'price_sold' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+        </button>
       </div>
 
 
@@ -252,8 +264,10 @@ const Inventory = () => {
               <p className="text-light-primary font-body mb-1"><span className="font-semibold">Reorden:</span> {item.restock_quantity}</p>
               <p className="text-light-primary font-body"><span className="font-semibold">Reciente:</span> {new Date(item.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
               <div className="flex justify-end gap-2 mt-4">
-                <button onClick={() => editItem(item)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
-                <button onClick={() => confirmDeleteItem(item.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
+                <button onClick={() => editItem(item)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaEdit /> Editar</button>
+                <button onClick={() => confirmDeleteItem(item.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaTrash /> Eliminar</button>
               </div>
             </div>
           ))}
@@ -264,38 +278,38 @@ const Inventory = () => {
           <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
             <tr className="rounded-t-lg">
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('name')} className="hover:text-highlight-premium focus:outline-none">
-                  Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('name')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaBoxes /> Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('quantity')} className="hover:text-highlight-premium focus:outline-none">
-                  Cantidad {sortConfig.key === 'quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('quantity')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaSortNumericDown /> Cantidad {sortConfig.key === 'quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('price_bought')} className="hover:text-highlight-premium focus:outline-none">
-                  Precio Compra {sortConfig.key === 'price_bought' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('price_bought')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaDollarSign /> Precio Compra {sortConfig.key === 'price_bought' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('price_sold')} className="hover:text-highlight-premium focus:outline-none">
-                  Precio Venta {sortConfig.key === 'price_sold' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('price_sold')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaDollarSign /> Precio Venta {sortConfig.key === 'price_sold' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('unit_type')} className="hover:text-highlight-premium focus:outline-none">
-                  Unidad {sortConfig.key === 'unit_type' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('unit_type')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaRuler /> Unidad {sortConfig.key === 'unit_type' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('restock_quantity')} className="hover:text-highlight-premium focus:outline-none">
-                  Reorden {sortConfig.key === 'restock_quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('restock_quantity')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaSync /> Reorden {sortConfig.key === 'restock_quantity' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('updated_at')} className="hover:text-highlight-premium focus:outline-none">
-                  Reciente {sortConfig.key === 'updated_at' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('updated_at')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaClock /> Reciente {sortConfig.key === 'updated_at' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-right text-sm font-semibold border-b border-accent-premium rounded-tr-lg">Acciones</th>
@@ -313,8 +327,10 @@ const Inventory = () => {
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{new Date(item.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium text-right">
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => editItem(item)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
-                    <button onClick={() => confirmDeleteItem(item.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
+                    <button onClick={() => editItem(item)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaEdit /> </button>
+                    <button onClick={() => confirmDeleteItem(item.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaTrash /> </button>
                   </div>
                 </td>
               </tr>
@@ -362,11 +378,9 @@ const Inventory = () => {
               </div>
               <div className="flex justify-between mt-6">
                 <button type="submit" className="bg-button-primary hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
-                  Guardar
-                </button>
+                  Guardar</button>
                 <button type="button" onClick={() => setIsItemModalOpen(false)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium">
-                  Cancelar
-                </button>
+                  Cancelar</button>
               </div>
             </form>
           </div>

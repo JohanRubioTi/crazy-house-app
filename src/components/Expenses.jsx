@@ -5,6 +5,8 @@ import { fetchExpenses, deleteExpense } from '../supabaseService';
 import AddExpenseModal from './AddExpenseModal';
 import EditExpenseModal from './EditExpenseModal';
 import ConfirmationModal from './ConfirmationModal';
+// Import icons
+import { FaEdit, FaTrash, FaSearch, FaPlus, FaTextWidth, FaDollarSign, FaCalendarAlt, FaTag, FaTools } from 'react-icons/fa';
 
 const Expenses = () => {
   const [expenses, setExpenses] = useAtom(expensesAtom);
@@ -15,18 +17,19 @@ const Expenses = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expenseToDeleteId, setExpenseToDeleteId] = useState(null);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
+  // Removed sortConfig and setSortConfig
   const [searchTerm, setSearchTerm] = useState(''); // Search term state
 
   useEffect(() => {
     loadExpenses();
-  }, [sortConfig]);
+  }, []); // Removed sortConfig dependency
 
   const loadExpenses = async () => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedExpenses = await fetchExpenses(sortConfig);
+      // Removed sortConfig from fetchExpenses call
+      const fetchedExpenses = await fetchExpenses();
       setExpenses(fetchedExpenses);
     } catch (err) {
       setError(err);
@@ -36,13 +39,7 @@ const Expenses = () => {
     }
   };
 
-  const handleSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
+  // Removed handleSort function
 
   const handleDeleteClick = (id) => {
     setExpenseToDeleteId(id);
@@ -109,20 +106,23 @@ const Expenses = () => {
       <h1 className="text-3xl font-bold text-primary mb-6 font-graffiti tracking-wide">Gastos</h1>
 
       <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap">
-        <div className="flex flex-grow gap-2 mb-2 sm:mb-0">
+        <div className="flex flex-grow gap-2 mb-2 sm:mb-0 relative">
           <input
             type="text"
             placeholder="Buscar gastos..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
+            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow pl-10"
           />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FaSearch className="text-light-text" />
+          </div>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap"
+          className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap flex items-center gap-2"
         >
-          Agregar Gasto
+          <FaPlus /> Agregar Gasto
         </button>
       </div>
 
@@ -138,13 +138,13 @@ const Expenses = () => {
               <div className="flex justify-end gap-2 mt-4">
                 <button
                   onClick={() => handleEditClick(expense)}
-                  className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">
-                  Editar
+                  className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaEdit /> Editar
                 </button>
                 <button
                   onClick={() => handleDeleteClick(expense.id)}
-                  className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">
-                  Eliminar
+                  className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaTrash /> Eliminar
                 </button>
               </div>
             </div>
@@ -155,12 +155,20 @@ const Expenses = () => {
         <table className="min-w-full table-fixed bg-dark-secondary rounded-lg shadow-premium-md border-separate border-spacing-0 hidden sm:table">
           <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
             <tr className="rounded-t-lg">
-              <ThSortable label="Descripción" key="description" sortConfig={sortConfig} handleSort={handleSort} />
-              <ThSortable label="Monto" key="amount" sortConfig={sortConfig} handleSort={handleSort} />
-              <ThSortable label="Fecha" key="date" sortConfig={sortConfig} handleSort={handleSort} />
-              <ThSortable label="Categoría" key="category" sortConfig={sortConfig} handleSort={handleSort} />
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium rounded-tl-lg">
+                <span className="flex items-center gap-2"><FaTextWidth /> Descripción</span>
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
+                <span className="flex items-center gap-2"><FaDollarSign /> Monto</span>
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
+                <span className="flex items-center gap-2"><FaCalendarAlt /> Fecha</span>
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
+                <span className="flex items-center gap-2"><FaTag /> Categoría</span>
+              </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium rounded-tr-lg">
-                Acciones
+                <span className="flex items-center gap-2"><FaTools /> Acciones</span>
               </th>
             </tr>
           </thead>
@@ -175,13 +183,13 @@ const Expenses = () => {
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => handleEditClick(expense)}
-                      className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">
-                      Editar
+                      className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaEdit />
                     </button>
                     <button
                       onClick={() => handleDeleteClick(expense.id)}
-                      className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">
-                      Eliminar
+                      className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaTrash />
                     </button>
                   </div>
                 </td>
@@ -216,14 +224,5 @@ const Expenses = () => {
   );
 };
 
-const ThSortable = ({ label, key, sortConfig, handleSort }) => {
-  const isSorted = sortConfig.key === key;
-  const direction = isSorted ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : '';
-  return (
-    <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium cursor-pointer" onClick={() => handleSort(key)}>
-      {label} {direction}
-    </th>
-  );
-};
 
 export default Expenses;

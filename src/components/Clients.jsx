@@ -12,6 +12,9 @@ import {
 } from '../supabaseService';
 import ConfirmationModal from './ConfirmationModal'; // Import confirmation modal
 import AddClientModal from './AddClientModal'; // Import AddClientModal
+// Import icons
+import { FaEdit, FaTrash, FaMotorcycle, FaChevronDown, FaChevronUp, FaSearch, FaUser, FaPhone, FaClock } from 'react-icons/fa';
+import { FaUserPlus } from 'react-icons/fa';
 
 const Clients = () => {
   const [clients, setClients] = useAtom(clientsAtom);
@@ -320,17 +323,20 @@ const Clients = () => {
       <h1 className="text-3xl font-display text-light-primary mb-6 tracking-wide">Clientes</h1>
 
       <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap">
-        <div className="flex flex-grow gap-2 mb-2 sm:mb-0">
+        <div className="flex flex-grow gap-2 mb-2 sm:mb-0 relative">
           <input
             type="text"
             placeholder="Buscar clientes..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow"
+            className="shadow appearance-none border border-gray-700 rounded-lg py-2 px-3 text-light-text leading-tight focus:outline-none focus:shadow-outline bg-dark-primary font-body flex-grow pl-10"
           />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FaSearch className="text-light-text" />
+          </div>
         </div>
-        <button onClick={addClient} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap">
-          Agregar Cliente
+        <button onClick={addClient} className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium whitespace-nowrap flex items-center gap-2">
+          <FaUserPlus /> Agregar Cliente
         </button>
       </div>
 
@@ -349,8 +355,10 @@ const Clients = () => {
                     <p className="text-light-text font-body"><span className="font-semibold">Modelo:</span> {motorcycle.model}</p>
                     <p className="text-light-text font-body"><span className="font-semibold">Placa:</span> {motorcycle.plate || 'N/A'}</p>
                     <div className="mt-2 flex justify-end gap-2">
-                      <button onClick={() => editMotorcycle(clients.find(c => c.id === expandedClientId), motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar Moto</button>
-                      <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar Moto</button>
+                      <button onClick={() => editMotorcycle(clients.find(c => c.id === expandedClientId), motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                        <FaEdit /> </button>
+                      <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                        <FaTrash /> </button>
                     </div>
                   </div>
                 ))}
@@ -380,22 +388,27 @@ const Clients = () => {
                       <p className="text-light-text font-body"><span className="font-semibold">Modelo:</span> {motorcycle.model}</p>
                       <p className="text-light-text font-body"><span className="font-semibold">Placa:</span> {motorcycle.plate || 'N/A'}</p>
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => editMotorcycle(client, motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar Moto</button>
-                        <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar Moto</button>
+                        <button onClick={() => editMotorcycle(client, motorcycle)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                          <FaEdit /> </button>
+                        <button onClick={() => confirmDeleteMotorcycle(motorcycle.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                          <FaTrash /> </button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
               <div className="flex justify-end gap-2 mt-4">
-                <button onClick={() => editClient(client)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
-                <button onClick={() => confirmDeleteClient(client.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
-                <button onClick={() => addMotorcycle(client.id)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Añadir Moto</button>
+                <button onClick={() => editClient(client)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaEdit /> </button>
+                <button onClick={() => confirmDeleteClient(client.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaTrash /> </button>
+                <button onClick={() => addMotorcycle(client.id)} className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                  <FaMotorcycle /></button>
                 <button
                   onClick={() => toggleClientExpansion(client.id)}
-                  className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs"
+                  className="bg-button-neutral hover:bg-button-neutral-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1"
                 >
-                  {expandedClientId === client.id ? 'Colapsar' : 'Expandir'}
+                  {expandedClientId === client.id ? <FaChevronUp /> : <FaChevronDown />}
                 </button>
               </div>
             </div>
@@ -407,18 +420,18 @@ const Clients = () => {
           <thead className="bg-dark-secondary text-light-primary font-display sticky top-0">
             <tr className="rounded-t-lg">
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('name')} className="hover:text-highlight-premium focus:outline-none">
-                  Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('name')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaUser /> Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('contact')} className="hover:text-highlight-premium focus:outline-none">
-                  Teléfono {sortConfig.key === 'contact' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('contact')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaPhone /> Teléfono {sortConfig.key === 'contact' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-left text-sm font-semibold border-b border-accent-premium">
-                <button onClick={() => requestSort('updated_at')} className="hover:text-highlight-premium focus:outline-none">
-                  Reciente {sortConfig.key === 'updated_at' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
+                <button onClick={() => requestSort('updated_at')} className="hover:text-highlight-premium focus:outline-none flex items-center gap-2">
+                  <FaClock /> Reciente {sortConfig.key === 'updated_at' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}
                 </button>
               </th>
               <th scope="col" className="px-4 py-3 text-right text-sm font-semibold border-b border-accent-premium rounded-tr-lg">Acciones</th>
@@ -432,14 +445,17 @@ const Clients = () => {
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{new Date(client.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium text-right">
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => editClient(client)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Editar</button>
-                    <button onClick={() => confirmDeleteClient(client.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Eliminar</button>
-                    <button onClick={() => addMotorcycle(client.id)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs">Añadir Moto</button>
+                    <button onClick={() => editClient(client)} className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaEdit /> </button>
+                    <button onClick={() => confirmDeleteClient(client.id)} className="bg-error-premium hover:bg-button-primary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaTrash /> </button>
+                    <button onClick={() => addMotorcycle(client.id)} className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1">
+                      <FaMotorcycle /></button>
                     <button
                       onClick={() => toggleClientExpansion(client.id)}
-                      className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs"
+                      className="bg-button-neutral hover:bg-button-neutral-hover text-light-primary font-semibold py-2 px-3 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium text-xs flex items-center gap-1"
                     >
-                      {expandedClientId === client.id ? 'Colapsar' : 'Expandir'}
+                      {expandedClientId === client.id ? <FaChevronUp /> : <FaChevronDown />}
                     </button>
                   </div>
                 </td>

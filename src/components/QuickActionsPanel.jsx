@@ -6,6 +6,8 @@ import React, { useState } from 'react';
     import { clientsAtom, servicesAtom, inventoryItemsAtom, motorcyclesAtom } from '../atoms';
     import { insertClient } from '../supabaseService';
     import ServiceModal from './ServiceModal';
+    // Import icons
+    import { FaUserPlus, FaBoxOpen, FaWrench, FaHistory } from 'react-icons/fa';
 
     const QuickActionsPanel = () => {
       const navigate = useNavigate();
@@ -59,31 +61,31 @@ import React, { useState } from 'react';
 
       return (
         <div className="quick-actions-panel">
-          <h2 className="text-lg font-semibold text-highlight-premium mb-3 font-display">Acciones Rápidas</h2>
+          <h2 className="text-lg font-semibold text-highlight-premium mb-3 font-display flex items-center">Acciones Rápidas</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => setIsAddClientModalOpen(true)}
-              className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
+              className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
             >
-              Añadir Cliente
+              <FaUserPlus className="mr-2" /> Añadir Cliente
             </button>
             <button
               onClick={() => setIsAddProductModalOpen(true)}
-              className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
+              className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
             >
-              Añadir Producto
+              <FaBoxOpen className="mr-2" /> Añadir Producto
             </button>
             <button
               onClick={() => setIsRegisterServiceModalOpen(true)}
-              className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
+              className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
             >
-              Registrar Servicio
+              <FaWrench className="mr-2" /> Registrar Servicio
             </button>
             <button
               onClick={() => navigate('/service-history')}
-              className="bg-button-secondary hover:bg-button-secondary-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
+              className="bg-button-neutral hover:bg-button-neutral-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"
             >
-              Ver Historial
+              <FaHistory className="mr-2" /> Ver Historial
             </button>
           </div>
 

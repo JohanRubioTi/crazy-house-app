@@ -22,11 +22,30 @@ const DashboardCharts = () => {
           month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
           expenses: 0,
           servicesRevenue: 0,
-          inventoryRevenue: 0
+          inventoryRevenue: 0,
+          inventoryExpenses: 0 // New category for inventory expenses
         });
       }
       monthMap.get(monthKey).expenses += parseFloat(expense.amount);
     });
+
+    // Process inventory purchase expenses
+    items.forEach(item => {
+      const date = new Date(item.updated_at);
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+
+      if (!monthMap.has(monthKey)) {
+        monthMap.set(monthKey, {
+          month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
+          expenses: 0,
+          servicesRevenue: 0,
+          inventoryRevenue: 0,
+          inventoryExpenses: 0 // Initialize inventory expenses
+        });
+      }
+      monthMap.get(monthKey).inventoryExpenses += (item.price_bought * item.quantity); // Accumulate inventory expenses
+    });
+
 
     // Process services
     services.forEach(service => {
@@ -38,7 +57,8 @@ const DashboardCharts = () => {
           month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
           expenses: 0,
           servicesRevenue: 0,
-          inventoryRevenue: 0
+          inventoryRevenue: 0,
+          inventoryExpenses: 0
         });
       }
 
@@ -58,7 +78,8 @@ const DashboardCharts = () => {
           month: `${date.toLocaleString('es-CO', { month: 'short' })} ${date.getFullYear()}`,
           expenses: 0,
           servicesRevenue: 0,
-          inventoryRevenue: 0
+          inventoryRevenue: 0,
+          inventoryExpenses: 0
         });
       }
       monthMap.get(monthKey).inventoryRevenue += item.quantity * item.price_sold;
@@ -75,6 +96,14 @@ const DashboardCharts = () => {
     acc[category] = (acc[category] || 0) + parseFloat(expense.amount);
     return acc;
   }, {});
+
+  // Add inventory expenses to expense categories
+  let inventoryBuyExpenses = 0;
+  items.forEach(item => {
+    inventoryBuyExpenses += (item.price_bought * item.quantity);
+  });
+  expenseCategories['Compra de Inventario'] = inventoryBuyExpenses;
+
 
   // Process inventory data for value distribution
   const inventoryValueData = items.map(item => ({
@@ -111,15 +140,23 @@ const DashboardCharts = () => {
               type="monotone"
               dataKey="inventoryRevenue"
               name="Inventario Potencial"
-              stroke="#highlight-premium" // Highlight premium color
+              stroke="#FFC658" // Highlight premium color, changed to #FFC658
               strokeWidth={2}
               activeDot={{ r: 6 }}
             />
             <Line
               type="monotone"
               dataKey="expenses"
-              name="Gastos"
+              name="Gastos Operativos"
               stroke="#FCA5A5" // Premium error color
+              strokeWidth={2}
+              activeDot={{ r: 6 }}
+            />
+             <Line
+              type="monotone"
+              dataKey="inventoryExpenses"
+              name="Gastos Inventario"
+              stroke="#9CA3AF" // Gray color for inventory expenses
               strokeWidth={2}
               activeDot={{ r: 6 }}
             />
@@ -134,7 +171,7 @@ const DashboardCharts = () => {
           <BarChart data={Object.entries(expenseCategories).map(([name, value]) => ({ name, value }))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
             <XAxis dataKey="name" stroke="#CBD5E0" tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
-            <YAxis stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
+            <YAxis stroke="#CBD5E0" stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
             <Tooltip
               contentStyle={{ backgroundColor: '#334155', border: 'none', fontFamily: 'Lato' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}
