@@ -5,6 +5,7 @@ import { fetchExpenses, deleteExpense } from '../supabaseService';
 import AddExpenseModal from './AddExpenseModal';
 import EditExpenseModal from './EditExpenseModal';
 import ConfirmationModal from './ConfirmationModal';
+import Loading from './Loading'; // Import Loading component
 // Import icons
 import { FaEdit, FaTrash, FaSearch, FaPlus, FaTextWidth, FaDollarSign, FaCalendarAlt, FaTag, FaTools } from 'react-icons/fa';
 
@@ -94,7 +95,7 @@ const Expenses = () => {
 
 
   if (loading) {
-    return <div className="loading">Cargando Gastos...</div>;
+    return <Loading message="Cargando Gastos..." />; // Use Loading component
   }
 
   if (error) {

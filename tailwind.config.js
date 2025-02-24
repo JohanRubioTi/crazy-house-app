@@ -95,12 +95,27 @@ module.exports = {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
+        'header-pulse-scale': { // New animation definition
+          '0%': {
+            transform: 'scale(1)',
+            opacity: 1,
+          },
+          '100%': {
+            transform: 'scale(1.05)',
+            opacity: 0.9,
+          },
+        },
       },
       animation: {
-        'gradient-move': 'gradient-move 8s linear infinite',
+        'gradient-move': 'gradient-move 15s ease infinite',
+        'header-pulse-scale': 'header-pulse-scale 1.5s ease-in-out infinite alternate', // Applying new animation
       },
       backgroundImage: {
-        'premium-gradient': 'linear-gradient(45deg, #111827, #1F2937, #111827)',
+        'night-gradient': 'linear-gradient(to bottom, #0f172a, #1e293b)',
+        'stylized-stripes': 'linear-gradient(45deg, #1F2937 25%, transparent 25%, transparent 50%, #1F2937 50%, #1F2937 75%, transparent 75%, transparent)', // Diagonal stripes
+      },
+      backgroundSize: {
+        'stylized-stripes-bg': '40px 40px', // Adjust size of stripes as needed
       },
     },
   },

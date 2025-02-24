@@ -1,3 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Bebas Neue font */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+/* Apply styles to the header title */
+.header-title {
+  font-family: 'Bebas Neue', cursive; /* Use Bebas Neue */
+  animation: header-pulse-scale 1.5s ease-in-out infinite alternate, text-flicker 5s linear infinite alternate; /* Combined animations */
+  letter-spacing: 0.1em; /* Increased letter spacing */
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* Added text shadow */
+}
+
+/* Style for the subheader text */
+.subheader-text {
+  opacity: 1;
+  font-size: 1.1rem;
+  /* color: #67e8f9;  Removed the cyan color */
+}
+
+/* Style for input text (including placeholders) */
+.input-text {
+  color: #67e8f9; /* Changed to a light cyan */
+}
+
+/* Placeholder style - targeting most common browsers */
+::placeholder {
+  color: #9CA3AF;
+  opacity: 1;
+}
+
+/* Firefox-specific placeholder style */
+:-ms-input-placeholder {
+  color: #9CA3AF;
+}
+
+/* Microsoft Edge-specific placeholder style */
+::-ms-input-placeholder {
+  color: #9CA3AF;
+}
+
+@layer base {
+  h1 {
+    @apply font-display;
+  }
+  h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+  body {
+    @apply font-body;
+  }
+}
+
+/* Animate background position for subtle movement */
+@keyframes background-pan {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}
+
+.animate-background-pan {
+  animation: background-pan 20s linear infinite;
+  background-size: 200% 200%;
+}
+
+/* Keyframes for header pulse and scale animation */
+@keyframes header-pulse-scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes text-flicker {
+  0%   { opacity: 1; }
+  15%  { opacity: 0.9; text-shadow: 0 0 0.2rem var(--tw-shadow-color); }
+  20%  { opacity: 1; }
+  23%  { opacity: 0.95; text-shadow: none; }
+  27%  { opacity: 1; text-shadow: 0 0 0.1rem var(--tw-shadow-color); }
+  30%  { opacity: 0.97;}
+  35%  { opacity: 1; text-shadow: 0 0 0.3rem var(--tw-shadow-color); }
+  40%  { opacity: 0.95; }
+  48%  { opacity: 1; text-shadow: none; }
+  60%  { opacity: 0.98; text-shadow: 0 0 0.2rem var(--tw-shadow-color); }
+  70%  { opacity: 1; }
+  77%  { opacity: 0.99; }
+  80%  { opacity: 1; text-shadow: 0 0 0.4rem var(--tw-shadow-color); }
+  100% { opacity: 1; }
+}
+
+.animate-text-flicker {
+  animation: text-flicker 5s linear infinite alternate;
+}
+
 .app-container {
     display: flex;
     flex-direction: column;
@@ -54,14 +158,13 @@
   font-size: 1.6em; /* Slightly reduced icon size */
   margin-bottom: 6px; /* Reduced margin */
   opacity: 0.8; /* Slightly faded icons */
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease; /* Added semicolon here */
 }
 
 .nav-link:hover .nav-icon,
 .nav-link.active .nav-icon {
     opacity: 1; /* Full opacity on hover and active */
 }
-
 
 .nav-label {
   font-size: 0.85rem; /* Slightly smaller and more premium label text */
@@ -87,5 +190,35 @@
 
   .nav-label {
     font-size: 0.75rem; /* Slightly smaller text on smaller screens */
+  }
+    /* Hide logout label on small screens */
+  .logout-label {
+    display: none;
+  }
+}
+/* Custom adjustment to hide logout label on mobile */
+@media (max-width: 768px) {
+  .logout-button-text {
+    display: none;
+    margin: 0; /* Ensure no margin */
+    padding: 0; /* Ensure no padding */
+  }
+  .logout-button {
+    width: auto; /* Adjust width to auto on mobile */
+    padding-left: 10px; /* Reduced left padding */
+    padding-right: 10px; /* Reduced right padding */
+    justify-content: center; /* Center icon horizontally */
+    padding-top: 8px; /* Slightly increased vertical padding */
+    padding-bottom: 8px; /* Slightly increased vertical padding */
+    align-items: center; /* Vertically center items */
+  }
+  .mobile-logout-icon {
+    font-size: 1.4em; /* Further reduced icon size to 1.4em */
+    margin-right: 0; /* Remove right margin */
+    padding-right: 0; /* Remove right padding */
+  }
+  /* Gradient background for loading modal - RE-APPLY GRADIENT */
+  .loading-background {
+    background: linear-gradient(135deg, #1e293b 50%, #0f172a 50%); /* Re-apply gradient background */
   }
 }
