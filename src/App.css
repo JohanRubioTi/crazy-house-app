@@ -205,20 +205,22 @@
   }
   .logout-button {
     width: auto; /* Adjust width to auto on mobile */
-    padding-left: 10px; /* Reduced left padding */
-    padding-right: 10px; /* Reduced right padding */
+    padding-left: 0; /* Remove left padding */
+    padding-right: 0; /* Remove right padding */
     justify-content: center; /* Center icon horizontally */
-    padding-top: 8px; /* Slightly increased vertical padding */
-    padding-bottom: 8px; /* Slightly increased vertical padding */
     align-items: center; /* Vertically center items */
+    height: auto; /* Adjust height to auto to fit content */
+    aspect-ratio: 1/1; /* Make it square */
+    border-radius: 0.5rem; /* Rounded corners for square button */
+    display: flex; /* Changed to display: flex; to ensure proper centering */
+    min-width: 40px; /* Minimum width to ensure it's tappable */
+    min-height: 40px; /* Minimum height to ensure it's tappable */
+    padding: 0; /* Reset padding */
   }
   .mobile-logout-icon {
-    font-size: 1.4em; /* Further reduced icon size to 1.4em */
+    font-size: 1.5em; /* Slightly bigger icon for better visibility in square */
     margin-right: 0; /* Remove right margin */
     padding-right: 0; /* Remove right padding */
   }
-  /* Gradient background for loading modal - RE-APPLY GRADIENT */
-  .loading-background {
-    background: linear-gradient(135deg, #1e293b 50%, #0f172a 50%); /* Re-apply gradient background */
-  }
+  /* Removed mobile-specific gradient for loading modal to unify with web */
 }

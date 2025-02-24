@@ -143,7 +143,7 @@ function App() {
   if (loading) {
     return (
       <div className="app-container bg-street-gradient flex justify-center items-center h-screen">
-        <Loading message="Cargando la aplicación..." />
+        <Loading message="Cargando la aplicación..." isLogin={true} />
       </div>
     );
   }
