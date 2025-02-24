@@ -171,7 +171,7 @@ const DashboardCharts = () => {
           <BarChart data={Object.entries(expenseCategories).map(([name, value]) => ({ name, value }))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
             <XAxis dataKey="name" stroke="#CBD5E0" tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
-            <YAxis stroke="#CBD5E0" stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
+            <YAxis stroke="#CBD5E0" tickFormatter={(value) => `$${value.toLocaleString('es-CO')}`} tick={{fontFamily: 'Lato', fontSize: '0.8rem'}}/>
             <Tooltip
               contentStyle={{ backgroundColor: '#334155', border: 'none', fontFamily: 'Lato' }}
               formatter={(value) => `$${value.toLocaleString('es-CO')}`}

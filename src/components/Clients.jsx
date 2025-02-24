@@ -320,7 +320,7 @@ const Clients = () => {
 
   return (
     <div className="clients p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
-      <h1 className="text-3xl font-display text-light-primary mb-6 tracking-wide">Clientes</h1>
+      <h1 className="text-3xl font-bold text-primary mb-6 font-graffiti tracking-wide">Clientes</h1>
 
       <div className="mb-4 flex flex-wrap gap-2 justify-between items-center sm:flex-nowrap">
         <div className="flex flex-grow gap-2 mb-2 sm:mb-0 relative">

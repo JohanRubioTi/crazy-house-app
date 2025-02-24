@@ -60,9 +60,9 @@ import React, { useState } from 'react';
       };
 
       return (
-        <div className="quick-actions-panel">
+        <div className="quick-actions-panel flex flex-col justify-center h-full"> {/* Added justify-center and h-full to the main container */}
           <h2 className="text-lg font-semibold text-highlight-premium mb-3 font-display flex items-center">Acciones Rápidas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center"> {/* Keep justify-center for horizontal button alignment */}
             <button
               onClick={() => setIsAddClientModalOpen(true)}
               className="bg-button-affirmative hover:bg-button-affirmative-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium justify-center flex items-center"

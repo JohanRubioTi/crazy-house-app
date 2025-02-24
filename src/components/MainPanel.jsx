@@ -293,9 +293,9 @@ import React, { useState, useEffect } from 'react';
         return (
             <div className="main-panel p-6 bg-premium-gradient bg-cover bg-center animate-gradient-move shadow-premium-md">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-display text-light-primary tracking-wide">Panel de Administración</h1>
+                    <h1 className="text-3xl font-bold text-primary mb-6 font-graffiti tracking-wide">Panel de Administración</h1>
                     <button onClick={onLogout} className="logout-button bg-button-logout hover:bg-button-logout-hover text-light-primary font-semibold py-2 px-4 rounded-lg shadow-button-premium hover:shadow-button-premium-hover transition-shadow duration-200 font-body border border-accent-premium flex items-center">
-                        <FaSignOutAlt className="mr-2 mobile-logout-icon" /> <span className="logout-button-text">Cerrar Sesión</span>
+                        <FaSignOutAlt className="mr-2 mobile-logout-icon hidden md:flex" /> <span className="logout-button-text">Cerrar Sesión</span>
                     </button>
                 </div>
 

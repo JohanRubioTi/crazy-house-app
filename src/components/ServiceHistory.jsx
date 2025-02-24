@@ -5,6 +5,7 @@ import { useAtom } from 'jotai';
 import { servicesAtom } from '../atoms';
 import { fetchServices } from '../supabaseService';
 import ServiceModal from './ServiceModal';
+import Loading from './Loading'; // Import Loading component
 // Import icons
 import { FaEdit, FaTrash, FaSearch, FaCalendar, FaMoneyBill, FaDollarSign, FaCog } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa';
@@ -31,6 +32,8 @@ const ServiceHistory = () => {
   const [clients, setClients] = useState([]);
   const [motorcycles, setMotorcycles] = useState([]);
   const [inventory, setInventory] = useState([]);
+  const [loadingClients, setLoadingClients] = useState(true); // Loading state for clients
+  const [loadingMotorcycles, setLoadingMotorcycles] = useState(true); // Loading state for motorcycles
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [currentService, setCurrentService] = useState(null);
@@ -44,6 +47,8 @@ const ServiceHistory = () => {
   const fetchData = useCallback(async () => {
     try {
       const userId = await getUserId();
+      setLoadingClients(true); // Start loading clients
+      setLoadingMotorcycles(true); // Start loading motorcycles
       const [clientsData, motorcyclesData, inventoryData] = await Promise.all([
         fetchClients(userId),
         fetchMotorcycles(userId),
@@ -55,6 +60,9 @@ const ServiceHistory = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError(error);
+    } finally {
+      setLoadingClients(false); // End loading clients
+      setLoadingMotorcycles(false); // End loading motorcycles
     }
   }, []);
 
@@ -325,9 +333,9 @@ const ServiceHistory = () => {
             const motorcycle = motorcycles.find(m => m.id === service.motorcycle_id);
             return (
               <div key={service.id} className="bg-dark-secondary rounded-lg shadow-premium-md border border-accent-premium mb-4 p-4">
-                <h3 className="text-xl font-semibold text-light-primary font-display mb-2">{client?.name || 'Cliente Desconocido'}</h3>
+                <h3 className="text-xl font-semibold text-light-primary font-display mb-2">{client?.name || <div className="skeleton-box h-6 w-40"></div> || 'Cliente Desconocido'}</h3> {/* Skeleton for Client Name */}
                 <p className="text-light-primary font-body mb-1"><span className="font-semibold">Fecha:</span> {new Date(service.date).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
-                <p className="text-light-primary font-body mb-1"><span className="font-semibold">Moto:</span> {motorcycle ? `${motorcycle.make || 'Desconocida'} ${motorcycle.model || 'N/A'}` : 'Desconocida'}</p>
+                <p className="text-light-primary font-body mb-1"><span className="font-semibold">Moto:</span> {motorcycle ? `${motorcycle.make || 'Desconocida'} ${motorcycle.model || 'N/A'}` : <div className="skeleton-box h-4 w-32"></div> || 'Desconocida'}</p> {/* Skeleton for Motorcycle */}
                 <p className="text-light-primary font-body mb-1"><span className="font-semibold">Tipo:</span> {service.service_type}</p>
                 <p className="text-light-primary font-body mb-1"><span className="font-semibold">Mano de Obra:</span> <span className="font-mono">${parseFloat(service.labor_cost).toLocaleString('es-CO')}</span></p>
                 <p className="text-light-primary font-body"><span className="font-semibold">Valor Total:</span> <span className="font-mono">${parseFloat(service.total_value).toLocaleString('es-CO')}</span></p>
@@ -381,8 +389,12 @@ const ServiceHistory = () => {
               return (
                 <tr key={service.id} className="group hover:bg-dark-primary transition-colors duration-200">
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{new Date(service.date).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{client?.name || 'Cliente Desconocido'}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{motorcycle ? `${motorcycle.make || 'Desconocida'} ${motorcycle.model || 'Desconocida'}` : 'Desconocida'}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">
+                    {loadingClients ? <div className="skeleton-box h-5 w-32"></div> : client?.name || 'Cliente Desconocido'} {/* Skeleton for Client Name */}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">
+                    {loadingMotorcycles ? <div className="skeleton-box h-5 w-24"></div> : motorcycle ? `${motorcycle.make || 'Desconocida'} ${motorcycle.model || 'Desconocida'}` : 'Desconocida'} {/* Skeleton for Motorcycle */}
+                  </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${parseFloat(service.labor_cost).toLocaleString('es-CO')}</td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">${parseFloat(service.total_value).toLocaleString('es-CO')}</td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-normal border-b border-accent-premium">{service.service_type}</td>

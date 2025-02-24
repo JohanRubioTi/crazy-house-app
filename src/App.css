@@ -186,41 +186,40 @@
   .nav-icon {
     font-size: 1.3em; /* Slightly smaller icons on smaller screens */
     margin-bottom: 5px; /* Adjusted margin on smaller screens */
+    display: flex !important; /* Ensure icon is displayed */
+    opacity: 1 !important; /* Ensure icon is fully opaque */
+    visibility: visible !important; /* Ensure icon is visible */
   }
 
   .nav-label {
     font-size: 0.75rem; /* Slightly smaller text on smaller screens */
   }
     /* Hide logout label on small screens */
-  .logout-label {
-    display: none;
-  }
-}
-/* Custom adjustment to hide logout label on mobile */
-@media (max-width: 768px) {
   .logout-button-text {
-    display: none;
-    margin: 0; /* Ensure no margin */
-    padding: 0; /* Ensure no padding */
+    display: none !important; /* Ensure text is hidden */
   }
   .logout-button {
-    width: auto; /* Adjust width to auto on mobile */
-    padding-left: 0; /* Remove left padding */
-    padding-right: 0; /* Remove right padding */
-    justify-content: center; /* Center icon horizontally */
-    align-items: center; /* Vertically center items */
-    height: auto; /* Adjust height to auto to fit content */
-    aspect-ratio: 1/1; /* Make it square */
-    border-radius: 0.5rem; /* Rounded corners for square button */
-    display: flex; /* Changed to display: flex; to ensure proper centering */
-    min-width: 40px; /* Minimum width to ensure it's tappable */
-    min-height: 40px; /* Minimum height to ensure it's tappable */
-    padding: 0; /* Reset padding */
+    width: auto !important; /* Adjust width to auto on mobile */
+    padding-left: 0 !important; /* Remove left padding */
+    padding-right: 0 !important; /* Remove right padding */
+    justify-content: center !important; /* Center icon horizontally */
+    align-items: center !important; /* Vertically center items */
+    height: auto !important; /* Adjust height to auto to fit content */
+    aspect-ratio: 1/1 !important; /* Make it square */
+    border-radius: 0.5rem !important; /* Rounded corners for square button */
+    display: flex !important; /* Changed to display: flex; to ensure proper centering */
+    min-width: 40px !important; /* Minimum width to ensure it's tappable */
+    min-height: 40px !important; /* Minimum height to ensure it's tappable */
+    padding: 0 !important; /* Reset padding */
   }
   .mobile-logout-icon {
-    font-size: 1.5em; /* Slightly bigger icon for better visibility in square */
-    margin-right: 0; /* Remove right margin */
-    padding-right: 0; /* Remove right padding */
+    font-size: 1.5em !important; /* Slightly bigger icon for better visibility in square */
+    margin-right: 0 !important; /* Remove right margin */
+    padding-right: 0 !important; /* Remove right padding */
+    display: flex !important; /* Ensure icon is displayed */
+    opacity: 1 !important; /* Ensure icon is fully opaque */
+    visibility: visible !important; /* Ensure icon is visible */
+    padding: 5px !important; /* Add padding to the icon */
   }
   /* Removed mobile-specific gradient for loading modal to unify with web */
 }

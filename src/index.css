@@ -1,3 +1,6 @@
+/* Import Bebas Neue font */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -32,4 +35,21 @@ code {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Skeleton Styles */
+.skeleton-box {
+  background-color: #374151; /* Darker gray for skeleton background */
+  opacity: 0.7;
+  border-radius: 0.375rem; /* Rounded corners like cards and buttons */
+  animation: skeleton-loading 1.5s linear infinite alternate;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-color: #374151;
+  }
+  100% {
+    background-color: #4B5563; /* Lighter gray at the end of animation */
+  }
 }
