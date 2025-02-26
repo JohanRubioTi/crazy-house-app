@@ -421,7 +421,7 @@ const ServiceHistory = () => {
 
       {isServiceModalOpen && (
         <div className="fixed inset-0 bg-dark-overlay flex justify-center items-center backdrop-blur-sm z-50">
-          <div className="bg-dark-secondary bg-opacity-90 backdrop-blur-md rounded-xl p-8 w-full max-w-2xl shadow-lg border border-accent-premium" style={{overflowY: 'auto', maxHeight: 'calc(100vh - 40px)' }}>
+          <div className="bg-dark-secondary bg-opacity-90 backdrop-blur-md rounded-xl p-8 w-full max-w-2xl shadow-lg border border-accent-premium">
             <h2 className="text-2xl font-semibold text-light-primary mb-6 font-display">{currentService ? 'Editar Servicio' : 'Agregar Servicio'}</h2>
             {/* Use the dedicated ServiceModal component here */}
             <ServiceModal
